@@ -1,0 +1,4 @@
+[package]
+name = "web_gui"
+version = "0.1.0"
+authors = ["Willi Kappler <willi.kappler@uni-tuebingen.de>"]
