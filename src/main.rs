@@ -3,7 +3,9 @@
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde_json;
 extern crate handlebars;
+extern crate serde;
 
+mod menu;
 mod login;
 mod logout;
 mod util;
@@ -16,19 +18,17 @@ fn main() {
 
     rouille::start_server(addr, move |request| {
         rouille::session::session(request, "ESD", 3600, |session| {
+            let session_id = session.id();
+
             router!(request,
                 (GET) (/) => {
-                    if util::logged_in(session.id()) {
-                        Response::html(util::TEMPLATE.render("main", &()).unwrap())
-                    } else {
-                        Response::html(util::TEMPLATE.render("login", &json!({"message": "Please log in first"})).unwrap())
-                    }
+                    menu::handle(session_id)
                 },
                 (GET) (/logout) => {
-                    logout::handle(session.id())
+                    logout::handle(session_id)
                 },
                 (POST) (/login) => {
-                    login::handle(session.id(), request)
+                    login::handle(session_id, request)
                 },
                 _ => Response::empty_404()
             )
