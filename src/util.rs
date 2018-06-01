@@ -28,10 +28,13 @@ struct UserData {
 }
 
 fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
-    Ok("abc".to_string())
+    info!("util.rs, get_hash_from_db()");
+    // TODO!!!
+    Ok("$argon2i$v=19$m=4096,t=3,p=1$cm9oYmF1Y2hhYzlUdW8wY2k2UmF1bmd1aGFpZzVzb2hjb29Ob2hjaXdlcmVlczRiYWtlZXRoM0NvaGJpZUxhaA$KAta8FGbVMSv/OsA/PGL0FXrNfjJ4Gv6SUkaiZKYbHA".to_string())
 }
 
 pub fn logged_in(client_id: &str) -> Result<bool, failure::Error> {
+    info!("util.rs, logged_in()");
     match USERDATA.lock() {
         Ok(user_data) => {
             Ok(user_data.contains_key(client_id))
@@ -43,6 +46,7 @@ pub fn logged_in(client_id: &str) -> Result<bool, failure::Error> {
 }
 
 pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Error> {
+    info!("util.rs, check_login()");
     let hash = get_hash_from_db(login_id)?;
 
     argon2::verify_encoded(&hash, password.as_bytes()).map_err(From::from)
@@ -60,10 +64,12 @@ pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Erro
 }
 
 pub fn render<T: Serialize>(name: &str, context: &T) -> Result<String, failure::Error> {
+    info!("util.rs, render()");
     TEMPLATE.render(name, context).map_err(From::from)
 }
 
 pub fn login_id(session_id: &str) -> Result<String, failure::Error> {
+    info!("util.rs, login_id()");
     match USERDATA.lock() {
         Ok(user_data) => {
             match user_data.get(session_id).map(|data| data.login_id.clone()) {
@@ -82,6 +88,7 @@ pub fn login_id(session_id: &str) -> Result<String, failure::Error> {
 }
 
 pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
+    info!("util.rs, login()");
     match USERDATA.lock() {
         Ok(mut user_data) => {
             match user_data.insert(session_id.to_string(),
@@ -101,6 +108,7 @@ pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
 }
 
 pub fn logout(session_id: &str) -> Result<String, failure::Error> {
+    info!("util.rs, logout()");
     match USERDATA.lock() {
         Ok(mut user_data) => {
             match user_data.remove(session_id).map(|data| data.login_id) {

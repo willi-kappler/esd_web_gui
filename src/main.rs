@@ -19,17 +19,26 @@ mod error;
 use rouille::{Request, Response};
 
 fn main() {
+    /*
+    let password = b"test1";
+    let salt = b"rohbauchac9Tuo0ci6Raunguhaig5sohcooNohciwerees4bakeeth3CohbieLah";
+    let config = argon2::Config::default();
+    let hash = argon2::hash_encoded(password, salt, &config).unwrap();
+    println!("hash: {}", hash);
+    return;
+    */
+
     let file_logger = log4rs::append::file::FileAppender::builder()
         .encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new("{d} {l} - {m}{n}")))
-        .build("webgui.log")
-        .unwrap();
+        .build("webgui.log").unwrap();
 
     let config = log4rs::config::Config::builder()
         .appender(log4rs::config::Appender::builder().build("file_logger", Box::new(file_logger)))
-        .build(log4rs::config::Root::builder().appender("file_logger").build(log::LevelFilter::Warn))
+        .build(log4rs::config::Root::builder().appender("file_logger").build(log::LevelFilter::Info))
         .unwrap();
 
     let _log_handle = log4rs::init_config(config).unwrap();
+
 
     let addr = "0.0.0.0:3030";
     println!("Now listening on {}", addr);

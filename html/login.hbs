@@ -1,0 +1,37 @@
+<html>
+<head>
+  <title>ESD WebGUI Login</title>
+</head>
+<body>
+  <h1>Welcome to the ESD WebGUI</h1>
+  {{#if message}}
+    <h2>{{message}}</h2>
+  {{/if}}
+  <form action="/login" method="post">
+    <table>
+      <tr>
+        <td>Login:</td>
+        <td><input name="login_id" type="text"></td>
+      </tr>
+      <tr>
+        <td>Password:</td>
+        <td><input name="password" type="password"></td>
+      </tr>
+      <tr>
+        <td>
+          <select name="program">
+            <option value="0">Pecube ESD</option>
+            <option value="1">Grain FT Correction (C.G.)</option>
+            <option value="2">LandLab ESD</option>
+            <option value="3">IceCascade</option>
+            <option value="4">Coupled landscape thermal simulation</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="submit"></td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
