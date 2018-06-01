@@ -1,12 +1,13 @@
 use rouille::{Response};
+use failure;
 
-use util;
+use util::{logged_in, logout, render};
 
-pub fn handle(session_id: &str) -> Response {
-    if util::logged_in(session_id) {
-        util::logout(session_id);
-        Response::html(util::render("logout", &()))
+pub fn handle(session_id: &str) -> Result<Response, failure::Error> {
+    Ok(if logged_in(session_id)? {
+        logout(session_id)?;
+        Response::html(render("logout", &())?)
     } else {
-        Response::html(util::render("login", &json!({"message": "Please log in first"})))
-    }
+        Response::html(render("login", &json!({"message": "Please log in first"}))?)
+    })
 }

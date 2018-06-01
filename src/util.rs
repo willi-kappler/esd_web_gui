@@ -1,8 +1,13 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
+use std::convert::From;
 
 use serde::{Serialize};
 use handlebars::{Handlebars};
+use argon2;
+
+use error::{WebGuiError};
+use failure;
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -22,13 +27,25 @@ struct UserData {
     login_id: String,
 }
 
-pub fn logged_in(client_id: &str) -> bool {
-    let user_data = USERDATA.lock().unwrap();
-    user_data.contains_key(client_id)
+fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
+    Ok("abc".to_string())
 }
 
-pub fn check_login(login_id: &str, password: &str) -> bool {
-    // TODO
+pub fn logged_in(client_id: &str) -> Result<bool, failure::Error> {
+    match USERDATA.lock() {
+        Ok(user_data) => {
+            Ok(user_data.contains_key(client_id))
+        }
+        Err(_) => {
+            Err(WebGuiError::UserDataMutexLockError.into())
+        }
+    }
+}
+
+pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Error> {
+    let hash = get_hash_from_db(login_id)?;
+
+    argon2::verify_encoded(&hash, password.as_bytes()).map_err(From::from)
 
 /*
     use argon2::{self, Config};
@@ -40,28 +57,63 @@ pub fn check_login(login_id: &str, password: &str) -> bool {
     let matches = argon2::verify_encoded(&hash, password).unwrap();
     assert!(matches);
 */
-
-    true
 }
 
-pub fn render<T: Serialize>(name: &str, context: &T) -> String {
-    match TEMPLATE.render(name, context) {
-        Ok(page) => { page }
-        Err(e) => { format!("util:render: TEMPLATE error: {:?}", e) }
+pub fn render<T: Serialize>(name: &str, context: &T) -> Result<String, failure::Error> {
+    TEMPLATE.render(name, context).map_err(From::from)
+}
+
+pub fn login_id(session_id: &str) -> Result<String, failure::Error> {
+    match USERDATA.lock() {
+        Ok(user_data) => {
+            match user_data.get(session_id).map(|data| data.login_id.clone()) {
+                Some(login_id) => {
+                    Ok(login_id)
+                }
+                None => {
+                    Err(WebGuiError::LoginNotFound { session_id: session_id.to_string() }.into())
+                }
+            }
+        }
+        Err(_) => {
+            Err(WebGuiError::UserDataMutexLockError.into())
+        }
     }
 }
 
-pub fn login_id(session_id: &str) -> Option<String> {
-    let user_data = USERDATA.lock().unwrap();
-    user_data.get(session_id).map(|data| data.login_id.clone())
+pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
+    match USERDATA.lock() {
+        Ok(mut user_data) => {
+            match user_data.insert(session_id.to_string(),
+            UserData { login_id: login_id.to_string() }).map(|data| data.login_id) {
+                Some(login_id2) => {
+                    Err(WebGuiError::AlreadyLoggedIn { session_id: session_id.to_string(), login_id: login_id.to_string(), login_id2 }.into())
+                }
+                None => {
+                    Ok(())
+                }
+            }
+        }
+        Err(_) => {
+            Err(WebGuiError::UserDataMutexLockError.into())
+        }
+    }
 }
 
-pub fn login(session_id: &str, login_id: &str) -> Option<String> {
-    let mut user_data = USERDATA.lock().unwrap();
-    user_data.insert(session_id.to_string(), UserData { login_id: login_id.to_string() }).map(|data| data.login_id)
-}
-
-pub fn logout(session_id: &str) -> Option<String> {
-    let mut user_data = USERDATA.lock().unwrap();
-    user_data.remove(session_id).map(|data| data.login_id)
+pub fn logout(session_id: &str) -> Result<String, failure::Error> {
+    match USERDATA.lock() {
+        Ok(mut user_data) => {
+            match user_data.remove(session_id).map(|data| data.login_id) {
+                Some(login_id) => {
+                    Ok(login_id)
+                }
+                None => {
+                    Err(WebGuiError::CouldNotLogout { session_id: session_id.to_string() }.into())
+                }
+            }
+        }
+        Err(_) => {
+            Err(WebGuiError::UserDataMutexLockError.into())
+        }
+    }
 }
