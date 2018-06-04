@@ -16,4 +16,8 @@ pub enum WebGuiError {
     },
     #[fail(display = "Could not lock USERDATA")]
     UserDataMutexLockError,
+    #[fail(display = "Could not lock CONFIGURATION")]
+    ConfigurationMutexLockError,
+    #[fail(display = "Invalid number of command line arguments")]
+    InvalidCommandLineArguments,
 }

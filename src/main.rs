@@ -4,11 +4,13 @@
 #[macro_use] extern crate serde_json;
 #[macro_use] extern crate failure;
 #[macro_use] extern crate log;
+#[macro_use] extern crate diesel;
 
 extern crate handlebars;
 extern crate serde;
 extern crate argon2;
 extern crate log4rs;
+extern crate toml;
 
 mod menu;
 mod login;
@@ -28,13 +30,15 @@ fn main() {
     return;
     */
 
+    util::load_configuration();
+
     let file_logger = log4rs::append::file::FileAppender::builder()
         .encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new("{d} {l} - {m}{n}")))
-        .build("webgui.log").unwrap();
+        .build(util::log_filename()).unwrap();
 
     let config = log4rs::config::Config::builder()
         .appender(log4rs::config::Appender::builder().build("file_logger", Box::new(file_logger)))
-        .build(log4rs::config::Root::builder().appender("file_logger").build(log::LevelFilter::Info))
+        .build(log4rs::config::Root::builder().appender("file_logger").build(log::LevelFilter::Debug))
         .unwrap();
 
     let _log_handle = log4rs::init_config(config).unwrap();

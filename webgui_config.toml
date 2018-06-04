@@ -1,0 +1,5 @@
+log_filename = "webgui1.log"
+db_name = "webguidb"
+db_user = "webgui"
+db_password = "1234567890"
+
