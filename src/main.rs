@@ -43,6 +43,7 @@ fn main() {
 
     let _log_handle = log4rs::init_config(config).unwrap();
 
+    util::connect_to_db();
 
     let addr = "0.0.0.0:3030";
     println!("Now listening on {}", addr);
@@ -66,7 +67,7 @@ fn main() {
 }
 
 fn handle_request(request: &Request, session_id: &str) -> Result<Response, failure::Error> {
-    debug!("main.rs, handle_request()")
+    debug!("main.rs, handle_request()");
     Ok(router!(request,
         (GET) (/) => {
             menu::handle(session_id)?

@@ -9,9 +9,10 @@ use serde::{Serialize};
 use handlebars::{Handlebars};
 use argon2;
 use toml;
+use failure;
+use diesel::{SqliteConnection, Connection};
 
 use error::{WebGuiError};
-use failure;
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -99,6 +100,64 @@ pub fn log_filename() -> String {
             process::exit(1)
         }
     }
+}
+
+pub fn connect_to_db() {
+    debug!("util.rs, connect_to_db()");
+
+    match connect_to_db_helper() {
+        Ok(_) => {
+            info!("Successfully connected to db");
+        }
+        Err(e) => {
+            error!("Could not connect to db: {}", e);
+            process::exit(1);
+        }
+    }
+
+}
+
+fn connect_to_db_helper() -> Result<(), failure::Error> {
+    match CONFIGURATION.lock() {
+        Ok(configuration) => {
+            let connection = SqliteConnection::establish(&configuration.db_name)?;
+            Ok(())
+        }
+        Err(_) => {
+            Err(WebGuiError::ConfigurationMutexLockError.into())
+        }
+    }
+
+
+
+
+
+    // SqliteConnection::establish(&database_url)
+
+    /*
+
+
+    fn main() {
+        use self::schema::posts::dsl::*;
+
+        let connection = establish_connection();
+        let results = posts
+            .filter(published.eq(true))
+            .limit(5)
+            .load::<Post>(&connection)
+            .expect("Error loading posts");
+
+        println!("Displaying {} posts", results.len());
+        for post in results {
+            println!("{}", post.title);
+            println!("----------\n");
+            println!("{}", post.body);
+        }
+    }
+
+
+    */
+
 }
 
 fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
