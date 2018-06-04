@@ -66,6 +66,7 @@ fn main() {
 }
 
 fn handle_request(request: &Request, session_id: &str) -> Result<Response, failure::Error> {
+    debug!("main.rs, handle_request()")
     Ok(router!(request,
         (GET) (/) => {
             menu::handle(session_id)?

@@ -4,7 +4,7 @@ use failure;
 use util::{check_login, login, render, login_id};
 
 pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
-    info!("login.rs, handle()");
+    debug!("login.rs, handle()");
     let data = post_input!(request, {
         login_id: String,
         password: String,
