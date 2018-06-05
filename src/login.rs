@@ -1,7 +1,8 @@
 use rouille::{Response, Request};
 use failure;
 
-use util::{check_login, login, render, login_id};
+use util::{render};
+use database::{check_login, login, login_id};
 
 pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("login.rs, handle()");

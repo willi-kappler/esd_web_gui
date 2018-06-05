@@ -18,6 +18,8 @@ pub enum WebGuiError {
     UserDataMutexLockError,
     #[fail(display = "Could not lock CONFIGURATION")]
     ConfigurationMutexLockError,
+    #[fail(display = "Could not lock DB_CONNECTION")]
+    DatabaseMutexLockError,
     #[fail(display = "Invalid number of command line arguments")]
     InvalidCommandLineArguments,
 }

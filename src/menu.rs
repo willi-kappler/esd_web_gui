@@ -1,7 +1,8 @@
 use rouille::{Response};
 use failure;
 
-use util::{logged_in, render, login_id};
+use util::{render};
+use database::{logged_in, login_id};
 
 pub fn handle(session_id: &str) -> Result<Response, failure::Error> {
     debug!("menu.rs, handle()");

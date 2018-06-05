@@ -15,8 +15,10 @@ extern crate toml;
 mod menu;
 mod login;
 mod logout;
-mod util;
+mod database;
+mod configuration;
 mod error;
+mod util;
 
 use rouille::{Request, Response};
 
@@ -30,11 +32,11 @@ fn main() {
     return;
     */
 
-    util::load_configuration();
+    configuration::load_configuration();
 
     let file_logger = log4rs::append::file::FileAppender::builder()
         .encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new("{d} {l} - {m}{n}")))
-        .build(util::log_filename()).unwrap();
+        .build(configuration::log_filename()).unwrap();
 
     let config = log4rs::config::Config::builder()
         .appender(log4rs::config::Appender::builder().build("file_logger", Box::new(file_logger)))
@@ -43,7 +45,7 @@ fn main() {
 
     let _log_handle = log4rs::init_config(config).unwrap();
 
-    util::connect_to_db();
+    database::connect_to_db();
 
     let addr = "0.0.0.0:3030";
     println!("Now listening on {}", addr);
