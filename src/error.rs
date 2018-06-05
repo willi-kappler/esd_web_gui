@@ -22,4 +22,10 @@ pub enum WebGuiError {
     DatabaseMutexLockError,
     #[fail(display = "Invalid number of command line arguments")]
     InvalidCommandLineArguments,
+    #[fail(display = "User name not found")]
+    UserNotFound,
+    #[fail(display = "Multiple user found with same name")]
+    MultipleUsers,
+    #[fail(display = "Multiple clients found with same id")]
+    MultipleClients,
 }
