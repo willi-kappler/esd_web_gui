@@ -14,8 +14,6 @@ pub enum WebGuiError {
     CouldNotLogout {
         session_id: String,
     },
-    #[fail(display = "Could not lock USERDATA")]
-    UserDataMutexLockError,
     #[fail(display = "Could not lock CONFIGURATION")]
     ConfigurationMutexLockError,
     #[fail(display = "Could not lock DB_CONNECTION")]

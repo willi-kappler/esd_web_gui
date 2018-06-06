@@ -1,10 +1,6 @@
-use std::convert::From;
-
 use serde::{Serialize};
 use handlebars::{Handlebars};
 use failure;
-
-use error::{WebGuiError};
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -18,5 +14,5 @@ lazy_static! {
 
 pub fn render<T: Serialize>(name: &str, context: &T) -> Result<String, failure::Error> {
     debug!("util.rs, render()");
-    TEMPLATE.render(name, context).map_err(From::from)
+    TEMPLATE.render(name, context).map_err(|e| e.into())
 }

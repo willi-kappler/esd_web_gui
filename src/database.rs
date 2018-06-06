@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::process;
 use std::convert::From;
 
@@ -36,6 +36,10 @@ lazy_static! {
     };
 }
 
+fn get_db_connection<'a>() -> Result<MutexGuard<'a, SqliteConnection>, failure::Error> {
+    DB_CONNECTION.lock().map_err(|_| WebGuiError::DatabaseMutexLockError.into())
+}
+
 pub fn connect_to_db() {
     debug!("database.rs, connect_to_db()");
     match connect_to_db_helper() {
@@ -47,22 +51,14 @@ pub fn connect_to_db() {
             process::exit(1);
         }
     }
-
 }
 
 fn connect_to_db_helper() -> Result<(), failure::Error> {
     debug!("database.rs, connect_to_db_helper()");
     let new_connection = SqliteConnection::establish(&configuration::db_name()?)?;
-
-    match DB_CONNECTION.lock() {
-        Ok(mut connection) => {
-            *connection = new_connection;
-            Ok(())
-        }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
-        }
-    }
+    let mut connection = get_db_connection()?;
+    *connection = new_connection;
+    Ok(())
 
     // SqliteConnection::establish(&database_url)
 
@@ -137,56 +133,42 @@ fn connect_to_db_helper() -> Result<(), failure::Error> {
 
 fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, get_hash_from_db()");
-    match DB_CONNECTION.lock() {
-        Ok(connection) => {
-            use self::user_info::dsl::*;
+    use self::user_info::dsl::*;
 
-            let results : Vec<String> = user_info.filter(name.eq(login_id)).select(passwd).get_results(&*connection)?;
-            let num_of_results = results.len();
+    let connection = get_db_connection()?;
+    let results : Vec<String> = user_info.filter(name.eq(login_id)).select(passwd).get_results(&*connection)?;
+    let num_of_results = results.len();
 
-            match num_of_results {
-                0 => {
-                    Err(WebGuiError::UserNotFound.into())
-                }
-                1 => {
-                    Ok(results[0].clone())
-                }
-                _ => {
-                    Err(WebGuiError::MultipleUsers.into())
-                }
-            }
-
-            //Ok("$argon2i$v=19$m=4096,t=3,p=1$cm9oYmF1Y2hhYzlUdW8wY2k2UmF1bmd1aGFpZzVzb2hjb29Ob2hjaXdlcmVlczRiYWtlZXRoM0NvaGJpZUxhaA$KAta8FGbVMSv/OsA/PGL0FXrNfjJ4Gv6SUkaiZKYbHA".to_string())
+    match num_of_results {
+        0 => {
+            Err(WebGuiError::UserNotFound.into())
         }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
+        1 => {
+            Ok(results[0].clone())
+        }
+        _ => {
+            Err(WebGuiError::MultipleUsers.into())
         }
     }
 }
 
 pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, logged_in()");
-    match DB_CONNECTION.lock() {
-        Ok(connection) => {
-            use self::user_info::dsl::*;
+    use self::user_info::dsl::*;
 
-            let results : Vec<bool> = user_info.filter(client_id.eq(session_id)).select(logged_in).get_results(&*connection)?;
-            let num_of_results = results.len();
+    let connection = get_db_connection()?;
+    let results : Vec<bool> = user_info.filter(client_id.eq(session_id)).select(logged_in).get_results(&*connection)?;
+    let num_of_results = results.len();
 
-            match num_of_results {
-                0 => {
-                    Ok(false)
-                }
-                1 => {
-                    Ok(results[0])
-                }
-                _ => {
-                    Err(WebGuiError::MultipleClients.into())
-                }
-            }
+    match num_of_results {
+        0 => {
+            Ok(false)
         }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
+        1 => {
+            Ok(results[0])
+        }
+        _ => {
+            Err(WebGuiError::MultipleClients.into())
         }
     }
 }
@@ -211,42 +193,24 @@ pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Erro
 
 pub fn login_id(session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, login_id()");
-    match DB_CONNECTION.lock() {
-        Ok(connection) => {
-            // TODO
-            use self::user_info::dsl::*;
-            Ok("no_user".to_string())
-        }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
-        }
-    }
+    use self::user_info::dsl::*;
+
+    let connection = get_db_connection()?;
+    Ok("no_user".to_string())
 }
 
 pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
     debug!("database.rs, login()");
-    match DB_CONNECTION.lock() {
-        Ok(connection) => {
-            // TODO
-            use self::user_info::dsl::*;
-            Ok(())
-        }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
-        }
-    }
+    use self::user_info::dsl::*;
+
+    let connection = get_db_connection()?;
+    Ok(())
 }
 
 pub fn logout(session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, logout()");
-    match DB_CONNECTION.lock() {
-        Ok(connection) => {
-            // TODO
-            use self::user_info::dsl::*;
-            Ok("no_user".to_string())
-        }
-        Err(_) => {
-            Err(WebGuiError::DatabaseMutexLockError.into())
-        }
-    }
+    use self::user_info::dsl::*;
+
+    let connection = get_db_connection()?;
+    Ok("no_user".to_string())
 }
