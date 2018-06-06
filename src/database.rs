@@ -2,33 +2,32 @@ use std::sync::{Mutex, MutexGuard};
 use std::process;
 use std::convert::From;
 
-use diesel::{SqliteConnection, Connection, QueryDsl, ExpressionMethods, RunQueryDsl};
+use diesel::{self, SqliteConnection, Connection, QueryDsl, ExpressionMethods, RunQueryDsl};
 use argon2;
 use failure;
 
 use configuration;
 use error::{WebGuiError};
 
-#[derive(Queryable)]
-struct UserInfo {
-    id: i32,
-    name: String,
-    client_id: String,
-    logged_in: bool,
-    email: String,
-    passwd: String,
-}
-
 table! {
     user_info {
         id -> Integer,
-        name -> Text,
-        client_id -> Text,
+        login_id -> Text,
+        session_id -> Text,
         logged_in -> Bool,
+        full_name -> Text,
         email -> Text,
         passwd -> Text,
     }
 }
+
+/*
+    Database created with the following command:
+    CREATE TABLE user_info(id INTEGER PRIMARY KEY ASC, login_id TEXT, session_id TEXT, logged_in INTEGER, full_name TEXT, email TEXT, passwd TEXT);
+
+    Test user added with the following command:
+    insert into user_info (login_id, session_id, logged_in, full_name, email, passwd) values ("test_user", "", 0, "Test User", "test@home.com", "$argon2i$v=19$m=4096,t=3,p=1$hashvalue");
+*/
 
 lazy_static! {
     static ref DB_CONNECTION: Mutex<SqliteConnection> = {
@@ -131,20 +130,24 @@ fn connect_to_db_helper() -> Result<(), failure::Error> {
 
 }
 
-fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
+fn get_hash_from_db(new_login_id: &str) -> Result<Option<String>, failure::Error> {
     debug!("database.rs, get_hash_from_db()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    let results : Vec<String> = user_info.filter(name.eq(login_id)).select(passwd).get_results(&*connection)?;
+    let results : Vec<String> = user_info
+        .filter(login_id.eq(new_login_id))
+        .select(passwd)
+        .get_results(&*connection)?;
     let num_of_results = results.len();
 
     match num_of_results {
         0 => {
-            Err(WebGuiError::UserNotFound.into())
+            Ok(None)
         }
         1 => {
-            Ok(results[0].clone())
+            let hash = results[0].clone();
+            Ok(Some(hash))
         }
         _ => {
             Err(WebGuiError::MultipleUsers.into())
@@ -152,12 +155,15 @@ fn get_hash_from_db(login_id: &str) -> Result<String, failure::Error> {
     }
 }
 
-pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
+pub fn logged_in(new_session_id: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, logged_in()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    let results : Vec<bool> = user_info.filter(client_id.eq(session_id)).select(logged_in).get_results(&*connection)?;
+    let results : Vec<bool> = user_info
+        .filter(session_id.eq(new_session_id))
+        .select(logged_in)
+        .get_results(&*connection)?;
     let num_of_results = results.len();
 
     match num_of_results {
@@ -168,16 +174,21 @@ pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
             Ok(results[0])
         }
         _ => {
-            Err(WebGuiError::MultipleClients.into())
+            Err(WebGuiError::MultipleSessions.into())
         }
     }
 }
 
 pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, check_login()");
-    let hash = get_hash_from_db(login_id)?;
-
-    argon2::verify_encoded(&hash, password.as_bytes()).map_err(From::from)
+    match get_hash_from_db(login_id)? {
+        Some(hash) => {
+            argon2::verify_encoded(&hash, password.as_bytes()).map_err(From::from)
+        }
+        None => {
+            Ok(false)
+        }
+    }
 
 /*
     use argon2::{self, Config};
@@ -191,26 +202,104 @@ pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Erro
 */
 }
 
-pub fn login_id(session_id: &str) -> Result<String, failure::Error> {
+pub fn login_id(new_session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, login_id()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    Ok("no_user".to_string())
+
+    let results : Vec<String> = user_info
+        .filter(session_id.eq(new_session_id))
+        .select(login_id)
+        .get_results(&*connection)?;
+    let num_of_results = results.len();
+
+    match num_of_results {
+        0 => {
+            Err(WebGuiError::SessionNotFound.into())
+        }
+        1 => {
+            Ok(results[0].clone())
+        }
+        _ => {
+            Err(WebGuiError::MultipleSessions.into())
+        }
+    }
 }
 
-pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
+pub fn login(new_session_id: &str, new_login_id: &str) -> Result<(), failure::Error> {
     debug!("database.rs, login()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    Ok(())
+
+    let results : Vec<i32> = user_info
+        .filter(login_id.eq(new_login_id))
+        .select(id)
+        .get_results(&*connection)?;
+    let num_of_results = results.len();
+
+    match num_of_results {
+        0 => {
+            Err(WebGuiError::UserNotFound.into())
+        }
+        1 => {
+            let row_id = results[0];
+            let rows_affected : usize = diesel::update(user_info.filter(id.eq(row_id)))
+                .set((session_id.eq(new_session_id), logged_in.eq(true)))
+                .execute(&*connection)?;
+
+            match rows_affected {
+                1 => {
+                    Ok(())
+                }
+                _ => {
+                    Err(WebGuiError::UpdateDBError.into())
+                }
+            }
+        }
+        _ => {
+            Err(WebGuiError::MultipleUsers.into())
+        }
+    }
 }
 
-pub fn logout(session_id: &str) -> Result<String, failure::Error> {
+pub fn logout(new_session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, logout()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    Ok("no_user".to_string())
+    let results : Vec<i32> = user_info
+        .filter(session_id.eq(new_session_id))
+        .select(id)
+        .get_results(&*connection)?;
+    let num_of_results = results.len();
+
+    match num_of_results {
+        0 => {
+            Err(WebGuiError::SessionNotFound.into())
+        }
+        1 => {
+            let row_id = results[0];
+            let rows_affected : usize = diesel::update(user_info.filter(id.eq(row_id)))
+                .set((session_id.eq(""), logged_in.eq(false)))
+                .execute(&*connection)?;
+
+            match rows_affected {
+                1 => {
+                    let old_login_id : String = user_info
+                        .filter(id.eq(row_id))
+                        .select(login_id)
+                        .get_result(&*connection)?;
+                    Ok(old_login_id)
+                }
+                _ => {
+                    Err(WebGuiError::UpdateDBError.into())
+                }
+            }
+        }
+        _ => {
+            Err(WebGuiError::MultipleSessions.into())
+        }
+    }
 }
