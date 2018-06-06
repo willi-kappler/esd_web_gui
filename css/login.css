@@ -31,6 +31,11 @@
   font-size: 15px;
 }
 
-.input_style {
+.submit_style {
   font-size: 25px;
+}
+
+.input_style {
+  width: 100%;
+  font-size: 15px;
 }
