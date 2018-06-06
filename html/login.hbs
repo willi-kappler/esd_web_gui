@@ -1,25 +1,36 @@
 <html>
 <head>
+  <link rel="stylesheet" href="../css/login.css">
   <title>ESD WebGUI Login</title>
 </head>
 <body>
-  <h1>Welcome to the ESD WebGUI</h1>
-  {{#if message}}
-    <h2>{{message}}</h2>
-  {{/if}}
+  <div class="center_div">
+    <img src="../images/uni_esd_logo.jpg"></img>
+
+    <p class="space1"></p>
+
+    <h1>Welcome to the ESD Simulation Remote Computing Access</h1>
+    {{#if message}}
+      <h2><p>{{message}}</p></h2>
+    {{/if}}
+  </div>
+
+  <p class="space1"></p>
+
   <form action="/login" method="post">
-    <table>
+    <table class="table_style">
       <tr>
-        <td>Login:</td>
+        <td class="data1">Login id:</td>
         <td><input name="login_id" type="text"></td>
       </tr>
       <tr>
-        <td>Password:</td>
+        <td class="data1">Password:</td>
         <td><input name="password" type="password"></td>
       </tr>
       <tr>
+        <td>Select program to start using:</td>
         <td>
-          <select name="program">
+          <select name="program" class="select_style">
             <option value="0">Pecube ESD</option>
             <option value="1">Grain FT Correction (C.G.)</option>
             <option value="2">LandLab ESD</option>
@@ -28,10 +39,13 @@
           </select>
         </td>
       </tr>
-      <tr>
-        <td><input type="submit"></td>
-      </tr>
     </table>
+
+    <p class="space1"></p>
+
+    <div class="center_div">
+      <button type="submit" class="input_style">Log in</button>
+    </div>
   </form>
 </body>
 </html>

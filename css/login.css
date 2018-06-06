@@ -1,0 +1,36 @@
+.center_div {
+  text-align: center;
+}
+
+.table_style {
+  margin: auto;
+}
+
+.table_style td {
+  padding: 10px;
+  font-size: 20px;
+}
+
+.table_style tr {
+  background-color: #e0e0e0;
+}
+
+.space1 {
+  margin-bottom: 40px;
+}
+
+.data1 {
+  text-align: right;
+}
+
+.data2 {
+  text-align: center;
+}
+
+.select_style {
+  font-size: 15px;
+}
+
+.input_style {
+  font-size: 25px;
+}
