@@ -1,11 +1,11 @@
 <html>
 <head>
-  <link rel="stylesheet" href="../css/login.css">
+  <link rel="stylesheet" href="css/login.css">
   <title>ESD WebGUI Login</title>
 </head>
 <body>
   <div class="center_div">
-    <img src="../images/uni_esd_logo.jpg"></img>
+    <img src="images/uni_esd_logo.jpg"></img>
 
     <p class="space1"></p>
 
@@ -21,11 +21,11 @@
     <table class="table_style">
       <tr>
         <td class="data1">Login id:</td>
-        <td><input name="login_id" type="text" class="input_style"></td>
+        <td><input name="login_id" type="text" class = {{#if login_error}} "login_error" {{else}} "input_style" {{/if}}></td>
       </tr>
       <tr>
         <td class="data1">Password:</td>
-        <td><input name="password" type="password" class="input_style"></td>
+        <td><input name="password" type="password" class = {{#if login_error}} "login_error" {{else}} "input_style" {{/if}}></td>
       </tr>
       <tr>
         <td>Select program to start using:</td>

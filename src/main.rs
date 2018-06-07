@@ -19,6 +19,9 @@ mod database;
 mod configuration;
 mod error;
 mod util;
+mod programs;
+
+use std::fs::File;
 
 use rouille::{Request, Response};
 
@@ -70,15 +73,26 @@ fn main() {
 
 fn handle_request(request: &Request, session_id: &str) -> Result<Response, failure::Error> {
     debug!("main.rs, handle_request()");
+
     Ok(router!(request,
-        (GET) (/) => {
+        (GET) ["/"] => {
             menu::handle(session_id)?
         },
-        (GET) (/logout) => {
+        (GET) ["/logout"] => {
             logout::handle(session_id)?
         },
-        (POST) (/login) => {
+        (POST) ["/login"] => {
             login::handle(session_id, request)?
+        },
+
+        // Static files:
+        (GET) ["/images/uni_esd_logo.jpg"] => {
+            let file = File::open("images/uni_esd_logo.jpg")?;
+            Response::from_file("image/jpeg", file)
+        },
+        (GET) ["/css/login.css"] => {
+            let file = File::open("css/login.css")?;
+            Response::from_file("text/css", file)
         },
         _ => Response::empty_404()
     ))

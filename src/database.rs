@@ -8,6 +8,7 @@ use failure;
 
 use configuration;
 use error::{WebGuiError};
+use programs::{ProgramType};
 
 table! {
     user_info {
@@ -18,6 +19,8 @@ table! {
         full_name -> Text,
         email -> Text,
         passwd -> Text,
+        is_active -> Bool,
+        allowed_programs -> Text,
     }
 }
 
@@ -27,6 +30,11 @@ table! {
 
     Test user added with the following command:
     insert into user_info (login_id, session_id, logged_in, full_name, email, passwd) values ("test_user", "", 0, "Test User", "test@home.com", "$argon2i$v=19$m=4096,t=3,p=1$hashvalue");
+
+    New columns:
+    alter table user_info add column is_active INTEGER;
+    alter table user_info add column allowed_programs TEXT;
+
 */
 
 lazy_static! {
@@ -65,6 +73,7 @@ fn connect_to_db_helper() -> Result<(), failure::Error> {
     // https://docs.rs/diesel/1.2.2/diesel/query_dsl/trait.RunQueryDsl.html
     // https://docs.rs/diesel/1.2.2/diesel/fn.insert_into.html
     // https://docs.rs/diesel/1.2.2/diesel/fn.update.html
+    // https://docs.rs/diesel/1.2.2/diesel/sql_types/index.html
     //
 
     /*
@@ -130,13 +139,13 @@ fn connect_to_db_helper() -> Result<(), failure::Error> {
 
 }
 
-fn get_hash_from_db(new_login_id: &str) -> Result<Option<String>, failure::Error> {
+fn get_hash_from_db(form_login_id: &str) -> Result<Option<String>, failure::Error> {
     debug!("database.rs, get_hash_from_db()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
     let results : Vec<String> = user_info
-        .filter(login_id.eq(new_login_id))
+        .filter(login_id.eq(form_login_id))
         .select(passwd)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -155,13 +164,13 @@ fn get_hash_from_db(new_login_id: &str) -> Result<Option<String>, failure::Error
     }
 }
 
-pub fn logged_in(new_session_id: &str) -> Result<bool, failure::Error> {
+pub fn logged_in(client_session_id: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, logged_in()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
     let results : Vec<bool> = user_info
-        .filter(session_id.eq(new_session_id))
+        .filter(session_id.eq(client_session_id))
         .select(logged_in)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -202,14 +211,14 @@ pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Erro
 */
 }
 
-pub fn login_id(new_session_id: &str) -> Result<String, failure::Error> {
+pub fn login_id(client_session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, login_id()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
 
     let results : Vec<String> = user_info
-        .filter(session_id.eq(new_session_id))
+        .filter(session_id.eq(client_session_id))
         .select(login_id)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -227,14 +236,14 @@ pub fn login_id(new_session_id: &str) -> Result<String, failure::Error> {
     }
 }
 
-pub fn login(new_session_id: &str, new_login_id: &str) -> Result<(), failure::Error> {
+pub fn login(client_session_id: &str, form_login_id: &str) -> Result<(), failure::Error> {
     debug!("database.rs, login()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
 
     let results : Vec<i32> = user_info
-        .filter(login_id.eq(new_login_id))
+        .filter(login_id.eq(form_login_id))
         .select(id)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -246,7 +255,7 @@ pub fn login(new_session_id: &str, new_login_id: &str) -> Result<(), failure::Er
         1 => {
             let row_id = results[0];
             let rows_affected : usize = diesel::update(user_info.filter(id.eq(row_id)))
-                .set((session_id.eq(new_session_id), logged_in.eq(true)))
+                .set((session_id.eq(client_session_id), logged_in.eq(true)))
                 .execute(&*connection)?;
 
             match rows_affected {
@@ -264,13 +273,13 @@ pub fn login(new_session_id: &str, new_login_id: &str) -> Result<(), failure::Er
     }
 }
 
-pub fn logout(new_session_id: &str) -> Result<String, failure::Error> {
+pub fn logout(client_session_id: &str) -> Result<String, failure::Error> {
     debug!("database.rs, logout()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
     let results : Vec<i32> = user_info
-        .filter(session_id.eq(new_session_id))
+        .filter(session_id.eq(client_session_id))
         .select(id)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -302,4 +311,9 @@ pub fn logout(new_session_id: &str) -> Result<String, failure::Error> {
             Err(WebGuiError::MultipleSessions.into())
         }
     }
+}
+
+pub fn list_of_allowed_programs(user_login_id: &str) -> Result<Vec<ProgramType>, failure::Error> {
+    // TODO
+    Ok(vec![ProgramType::PecubeESD, ProgramType::GrainFTCorrection])
 }

@@ -39,3 +39,9 @@
   width: 100%;
   font-size: 15px;
 }
+
+.login_error {
+  width: 100%;
+  font-size: 15px;
+  background-color: #ffd0d0;
+}

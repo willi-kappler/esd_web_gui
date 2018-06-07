@@ -16,4 +16,6 @@ pub enum WebGuiError {
     MultipleSessions,
     #[fail(display = "Error while updateing the database")]
     UpdateDBError,
+    #[fail(display = "Unknown program type")]
+    UnknownProgramType,
 }

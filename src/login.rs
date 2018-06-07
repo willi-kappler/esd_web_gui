@@ -1,8 +1,9 @@
 use rouille::{Response, Request};
 use failure;
 
-use util::{render};
+use util::{render, show_program};
 use database::{check_login, login, login_id};
+use programs::{ProgramType};
 
 pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("login.rs, handle()");
@@ -14,8 +15,8 @@ pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::
 
     Ok(if check_login(&data.login_id, &data.password)? {
         login(session_id, &data.login_id)?;
-        Response::html(render("menu", &json!({"login_id": login_id(session_id)?, "program": &data.program}))?)
+        Response::html(show_program(&data.login_id, Some(ProgramType::convert(data.program)?))?)
     } else {
-        Response::html(render("login", &json!({"message": "Wrong user name or password"}))?)
+        Response::html(render("login", &json!({"message": "Wrong user name or password", "login_error": "true"}))?)
     })
 }
