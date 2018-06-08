@@ -18,4 +18,6 @@ pub enum WebGuiError {
     UpdateDBError,
     #[fail(display = "Unknown program type")]
     UnknownProgramType,
+    #[fail(display = "No programs for user defined in database")]
+    NoProgramsForUser,
 }

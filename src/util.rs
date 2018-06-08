@@ -3,7 +3,7 @@ use handlebars::{Handlebars};
 use failure;
 
 use programs::{ProgramType};
-use database::{login_id, list_of_allowed_programs};
+use database::{list_of_allowed_programs};
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -41,7 +41,7 @@ pub fn show_program(login_id: &str, selected: Option<ProgramType>) -> Result<Str
     debug!("util.rs, show_program()");
     let allowed_programs = list_of_allowed_programs(login_id)?;
     let context = &json!({"login_id": login_id, "programs":
-        allowed_programs.iter().map(get_template_name).collect::<Vec<&str>>()});
+        allowed_programs.iter().map(get_template_name).collect::<Vec<_>>()});
 
     match selected {
         Some(program) if allowed_programs.contains(&program) => {

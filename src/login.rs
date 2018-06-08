@@ -2,7 +2,7 @@ use rouille::{Response, Request};
 use failure;
 
 use util::{render, show_program};
-use database::{check_login, login, login_id};
+use database::{check_login, login};
 use programs::{ProgramType};
 
 pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::Error> {

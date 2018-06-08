@@ -244,6 +244,7 @@ pub fn login(client_session_id: &str, form_login_id: &str) -> Result<(), failure
 
     let results : Vec<i32> = user_info
         .filter(login_id.eq(form_login_id))
+        .filter(is_active.eq(true))
         .select(id)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -314,6 +315,33 @@ pub fn logout(client_session_id: &str) -> Result<String, failure::Error> {
 }
 
 pub fn list_of_allowed_programs(user_login_id: &str) -> Result<Vec<ProgramType>, failure::Error> {
-    // TODO
-    Ok(vec![ProgramType::PecubeESD, ProgramType::GrainFTCorrection])
+    debug!("database.rs, logout()");
+    use self::user_info::dsl::*;
+
+    let connection = get_db_connection()?;
+    let results : Vec<String> = user_info
+        .filter(login_id.eq(user_login_id))
+        .select(allowed_programs)
+        .get_results(&*connection)?;
+    let num_of_results = results.len();
+
+    match num_of_results {
+        0 => {
+            Err(WebGuiError::UserNotFound.into())
+        }
+        1 => {
+            let programs = results[0].split(",")
+                .map(|p| ProgramType::convert(p.parse::<u8>()?))
+                .collect::<Result<Vec<_>, _>>()?;
+
+            if programs.len() == 0 {
+                Err(WebGuiError::NoProgramsForUser.into())
+            } else {
+                Ok(programs)
+            }
+        }
+        _ => {
+            Err(WebGuiError::MultipleUsers.into())
+        }
+    }
 }
