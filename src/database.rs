@@ -146,6 +146,7 @@ fn get_hash_from_db(form_login_id: &str) -> Result<Option<String>, failure::Erro
     let connection = get_db_connection()?;
     let results : Vec<String> = user_info
         .filter(login_id.eq(form_login_id))
+        .filter(is_active.eq(true))
         .select(passwd)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -244,7 +245,6 @@ pub fn login(client_session_id: &str, form_login_id: &str) -> Result<(), failure
 
     let results : Vec<i32> = user_info
         .filter(login_id.eq(form_login_id))
-        .filter(is_active.eq(true))
         .select(id)
         .get_results(&*connection)?;
     let num_of_results = results.len();

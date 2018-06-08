@@ -78,11 +78,11 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         (GET) ["/"] => {
             menu::handle(session_id)?
         },
+        (POST) ["/"] => {
+            login::handle(session_id, request)?
+        },
         (GET) ["/logout"] => {
             logout::handle(session_id)?
-        },
-        (POST) ["/login"] => {
-            login::handle(session_id, request)?
         },
 
         // Static files:
