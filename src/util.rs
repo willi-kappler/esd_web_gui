@@ -9,6 +9,8 @@ lazy_static! {
     static ref TEMPLATE : Handlebars = {
         let mut hb = Handlebars::new();
         hb.register_template_file("login", "html/login.hbs").unwrap();
+        hb.register_template_file("header", "html/header.hbs").unwrap();
+        hb.register_template_file("footer", "html/footer.hbs").unwrap();
         hb.register_template_file("menu_pecube", "html/menu_pecube.hbs").unwrap();
         hb.register_template_file("menu_grain", "html/menu_grain.hbs").unwrap();
         hb.register_template_file("menu_landlab", "html/menu_landlab.hbs").unwrap();

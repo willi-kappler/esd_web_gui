@@ -1,7 +1,6 @@
 use rouille::{Response};
 use failure;
 
-use util::{render};
 use database::{logged_in, logout};
 
 pub fn handle(session_id: &str) -> Result<Response, failure::Error> {

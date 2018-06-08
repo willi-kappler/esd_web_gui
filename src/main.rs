@@ -94,6 +94,10 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             let file = File::open("css/login.css")?;
             Response::from_file("text/css", file)
         },
+        (GET) ["/css/menu.css"] => {
+            let file = File::open("css/menu.css")?;
+            Response::from_file("text/css", file)
+        },
         _ => Response::empty_404()
     ))
 }
