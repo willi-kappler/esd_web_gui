@@ -12,9 +12,17 @@ extern crate argon2;
 extern crate log4rs;
 extern crate toml;
 
+// Request handler:
 mod menu;
+mod menu_pecube;
+mod menu_grain;
+mod menu_landlab;
+mod menu_icecascade;
+mod menu_coupled;
 mod login;
 mod logout;
+
+// Helper / utils
 mod database;
 mod configuration;
 mod error;
@@ -83,6 +91,36 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         },
         (GET) ["/logout"] => {
             logout::handle(session_id)?
+        },
+        (GET) ["/menu_pecube"] => {
+            menu_pecube::handle_get(session_id)?
+        },
+        (POST) ["/menu_pecube"] => {
+            menu_pecube::handle_post(session_id, request)?
+        },
+        (GET) ["/menu_grain"] => {
+            menu_grain::handle_get(session_id)?
+        },
+        (POST) ["/menu_grain"] => {
+            menu_grain::handle_post(session_id, request)?
+        },
+        (GET) ["/menu_landlab"] => {
+            menu_landlab::handle_get(session_id)?
+        },
+        (POST) ["/menu_landlab"] => {
+            menu_landlab::handle_post(session_id, request)?
+        },
+        (GET) ["/menu_icecascade"] => {
+            menu_icecascade::handle_get(session_id)?
+        },
+        (POST) ["/menu_icecascade"] => {
+            menu_icecascade::handle_post(session_id, request)?
+        },
+        (GET) ["/menu_coupled"] => {
+            menu_coupled::handle_get(session_id)?
+        },
+        (POST) ["/menu_coupled"] => {
+            menu_coupled::handle_post(session_id, request)?
         },
 
         // Static files:
