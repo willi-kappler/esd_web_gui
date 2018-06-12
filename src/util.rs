@@ -5,7 +5,7 @@ use failure;
 use rouille::{Response, Request};
 
 
-use programs::{ProgramType};
+use program_types::{ProgramType};
 use database::{list_of_allowed_programs, login_id, logged_in};
 
 lazy_static! {

@@ -3,7 +3,7 @@ use failure;
 
 use util::{render, get_template_name};
 use database::{check_login, login};
-use programs::{ProgramType};
+use program_types::{ProgramType};
 
 pub fn handle(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("login.rs, handle()");

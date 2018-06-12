@@ -14,13 +14,9 @@ extern crate toml;
 
 // Request handler:
 mod menu;
-mod pecube;
-mod grain;
-mod landlab;
-mod icecascade;
-mod coupled;
 mod login;
 mod logout;
+mod program_types;
 
 // Helper / utils
 mod database;
@@ -33,11 +29,7 @@ use std::fs::File;
 
 use rouille::{Request, Response};
 
-use pecube::{menu_pecube};
-use grain::{menu_grain};
-use landlab::{menu_landlab};
-use icecascade::{menu_icecascade};
-use coupled::{menu_coupled};
+use programs::{pecube, grain, landlab, icecascade, coupled};
 
 fn main() {
     /*
@@ -99,34 +91,34 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             logout::handle(session_id)?
         },
         (GET) ["/menu_pecube"] => {
-            menu_pecube::handle_get(session_id)?
+            pecube::handle_get(session_id)?
         },
         (POST) ["/menu_pecube"] => {
-            menu_pecube::handle_post(session_id, request)?
+            pecube::handle_post(session_id, request)?
         },
         (GET) ["/menu_grain"] => {
-            menu_grain::handle_get(session_id)?
+            grain::handle_get(session_id)?
         },
         (POST) ["/menu_grain"] => {
-            menu_grain::handle_post(session_id, request)?
+            grain::handle_post(session_id, request)?
         },
         (GET) ["/menu_landlab"] => {
-            menu_landlab::handle_get(session_id)?
+            landlab::handle_get(session_id)?
         },
         (POST) ["/menu_landlab"] => {
-            menu_landlab::handle_post(session_id, request)?
+            landlab::handle_post(session_id, request)?
         },
         (GET) ["/menu_icecascade"] => {
-            menu_icecascade::handle_get(session_id)?
+            icecascade::handle_get(session_id)?
         },
         (POST) ["/menu_icecascade"] => {
-            menu_icecascade::handle_post(session_id, request)?
+            icecascade::handle_post(session_id, request)?
         },
         (GET) ["/menu_coupled"] => {
-            menu_coupled::handle_get(session_id)?
+            coupled::handle_get(session_id)?
         },
         (POST) ["/menu_coupled"] => {
-            menu_coupled::handle_post(session_id, request)?
+            coupled::handle_post(session_id, request)?
         },
 
         // Static files:

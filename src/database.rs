@@ -8,7 +8,7 @@ use failure;
 
 use configuration;
 use error::{WebGuiError};
-use programs::{ProgramType};
+use program_types::{ProgramType};
 
 table! {
     user_info {
