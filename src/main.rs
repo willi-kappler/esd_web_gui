@@ -14,11 +14,11 @@ extern crate toml;
 
 // Request handler:
 mod menu;
-mod menu_pecube;
-mod menu_grain;
-mod menu_landlab;
-mod menu_icecascade;
-mod menu_coupled;
+mod pecube;
+mod grain;
+mod landlab;
+mod icecascade;
+mod coupled;
 mod login;
 mod logout;
 
@@ -32,6 +32,12 @@ mod programs;
 use std::fs::File;
 
 use rouille::{Request, Response};
+
+use pecube::{menu_pecube};
+use grain::{menu_grain};
+use landlab::{menu_landlab};
+use icecascade::{menu_icecascade};
+use coupled::{menu_coupled};
 
 fn main() {
     /*
