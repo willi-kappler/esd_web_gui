@@ -90,34 +90,34 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         (GET) ["/logout"] => {
             logout::handle(session_id)?
         },
-        (GET) ["/menu_pecube"] => {
+        (GET) ["/pecube"] => {
             pecube::handle_get(session_id)?
         },
-        (POST) ["/menu_pecube"] => {
+        (POST) ["/pecube"] => {
             pecube::handle_post(session_id, request)?
         },
-        (GET) ["/menu_grain"] => {
+        (GET) ["/grain"] => {
             grain::handle_get(session_id)?
         },
-        (POST) ["/menu_grain"] => {
+        (POST) ["/grain"] => {
             grain::handle_post(session_id, request)?
         },
-        (GET) ["/menu_landlab"] => {
+        (GET) ["/landlab"] => {
             landlab::handle_get(session_id)?
         },
-        (POST) ["/menu_landlab"] => {
+        (POST) ["/landlab"] => {
             landlab::handle_post(session_id, request)?
         },
-        (GET) ["/menu_icecascade"] => {
+        (GET) ["/icecascade"] => {
             icecascade::handle_get(session_id)?
         },
-        (POST) ["/menu_icecascade"] => {
+        (POST) ["/icecascade"] => {
             icecascade::handle_post(session_id, request)?
         },
-        (GET) ["/menu_coupled"] => {
+        (GET) ["/coupled"] => {
             coupled::handle_get(session_id)?
         },
-        (POST) ["/menu_coupled"] => {
+        (POST) ["/coupled"] => {
             coupled::handle_post(session_id, request)?
         },
 

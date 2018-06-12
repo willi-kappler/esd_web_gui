@@ -14,11 +14,11 @@ lazy_static! {
         hb.register_template_file("login", "html/login.hbs").unwrap();
         hb.register_template_file("header", "html/header.hbs").unwrap();
         hb.register_template_file("footer", "html/footer.hbs").unwrap();
-        hb.register_template_file("menu_pecube", "html/menu_pecube.hbs").unwrap();
-        hb.register_template_file("menu_grain", "html/menu_grain.hbs").unwrap();
-        hb.register_template_file("menu_landlab", "html/menu_landlab.hbs").unwrap();
-        hb.register_template_file("menu_icecascade", "html/menu_icecascade.hbs").unwrap();
-        hb.register_template_file("menu_coupled", "html/menu_coupled.hbs").unwrap();
+        hb.register_template_file("pecube", "html/pecube.hbs").unwrap();
+        hb.register_template_file("grain", "html/grain.hbs").unwrap();
+        hb.register_template_file("landlab", "html/landlab.hbs").unwrap();
+        hb.register_template_file("icecascade", "html/icecascade.hbs").unwrap();
+        hb.register_template_file("coupled", "html/coupled.hbs").unwrap();
         hb
     };
 }
@@ -33,11 +33,11 @@ pub fn get_template_name<'a>(program: &ProgramType) -> &'a str {
     use self::ProgramType::*;
 
     match program {
-        PecubeESD => "menu_pecube",
-        GrainFTCorrection => "menu_grain",
-        LandLabESD => "menu_landlab",
-        IceCascade => "menu_icecascade",
-        CoupledLandscapeThermalSimulator => "menu_coupled",
+        PecubeESD => "pecube",
+        GrainFTCorrection => "grain",
+        LandLabESD => "landlab",
+        IceCascade => "icecascade",
+        CoupledLandscapeThermalSimulator => "coupled",
     }
 }
 
