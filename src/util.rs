@@ -6,7 +6,7 @@ use rouille::{Response, Request};
 
 
 use programs::{ProgramType};
-use database::{list_of_allowed_programs, login_id};
+use database::{list_of_allowed_programs, login_id, logged_in};
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -49,13 +49,17 @@ pub fn build_context(login_id: &str, allowed_programs: &Vec<ProgramType>) -> ser
 pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response, failure::Error> {
     debug!("util.rs, show_program()");
 
-    let user_login_id = login_id(session_id)?;
-    let allowed_programs = list_of_allowed_programs(&user_login_id)?;
+    if logged_in(session_id)? {
+        let user_login_id = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(&user_login_id)?;
 
-    if allowed_programs.contains(&program) {
-        let context = build_context(&user_login_id, &allowed_programs);
-        Ok(Response::html(render(get_template_name(program), &context)?))
+        if allowed_programs.contains(&program) {
+            let context = build_context(&user_login_id, &allowed_programs);
+            Ok(Response::html(render(get_template_name(program), &context)?))
+        } else {
+            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        }
     } else {
-        Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        Ok(Response::redirect_303("/"))
     }
 }

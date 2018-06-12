@@ -136,6 +136,6 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             let file = File::open("css/menu.css")?;
             Response::from_file("text/css", file)
         },
-        _ => Response::empty_404()
+        _ => Response::html("NOT FOUND")
     ))
 }

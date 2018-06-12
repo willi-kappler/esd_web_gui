@@ -4,20 +4,26 @@
   <title>ESD Simulator</title>
 </head>
 <body>
-  {{#if login_id}}
-  <div class="right_div">
-    <h3>{{login_id}}: <a href="logout">logout</a></h3>
-  </div>
-  {{/if}}
-
-  <div class="center_div">
-    <img src="images/uni_esd_logo.jpg"></img>
-
-    <p class="space1"></p>
-
-    <h1>Welcome to the ESD Simulation Remote Computing Access</h1>
-  </div>
-
-  {{#each programs as |name|}}
-    <p>{{name}}</p>
-  {{/each}}
+  <table class="header_table">
+    <tr>
+      <td>
+        <div class="menu_div">
+          <button class="base_property menu_button">Programs</button>
+          <div class="menu_content">
+            {{#each programs as |name|}}
+              <a href="{{name}}">{{name}}</a>
+            {{/each}}
+          </div>
+        </div>
+      </td>
+      <td class="logo_column">
+        <img src="images/uni_esd_logo.jpg" width="40%"></img>
+        <h2>Welcome to the ESD Simulation Remote Computing Access</h2>
+      </td>
+      {{#if login_id}}
+      <td>
+          <a href="logout" class="base_property logout">logout ({{login_id}})</a>
+      </td>
+      {{/if}}
+    </tr>
+  </table>
