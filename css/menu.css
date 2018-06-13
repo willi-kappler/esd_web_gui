@@ -80,3 +80,29 @@
 .active_item {
     background-color: #4CAF50;
 }
+
+.vspace1 {
+  margin-top: 20px;
+}
+
+.vspace2 {
+  margin-top: 50px;
+}
+
+.upload_image {
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+.upload_image tr {
+  border: 1px solid black;
+}
+
+.upload_image td {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.submit_style {
+  font-size: 20px;
+}

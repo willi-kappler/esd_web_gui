@@ -2,7 +2,7 @@ use serde::{Serialize};
 use serde_json;
 use handlebars::{Handlebars};
 use failure;
-use rouille::{Response, Request};
+use rouille::{Response};
 
 
 use program_types::{ProgramType};
@@ -16,6 +16,7 @@ lazy_static! {
         hb.register_template_file("footer", "html/footer.hbs").unwrap();
         hb.register_template_file("pecube", "html/pecube.hbs").unwrap();
         hb.register_template_file("grain", "html/grain.hbs").unwrap();
+        hb.register_template_file("grain_load_images", "html/grain_load_images.hbs").unwrap();
         hb.register_template_file("landlab", "html/landlab.hbs").unwrap();
         hb.register_template_file("icecascade", "html/icecascade.hbs").unwrap();
         hb.register_template_file("coupled", "html/coupled.hbs").unwrap();
@@ -34,16 +35,29 @@ pub fn get_template_name<'a>(program: &ProgramType) -> &'a str {
 
     match program {
         PecubeESD => "pecube",
-        GrainFTCorrection => "grain",
+        Grain3DHe => "grain",
         LandLabESD => "landlab",
         IceCascade => "icecascade",
         CoupledLandscapeThermalSimulator => "coupled",
     }
 }
 
-pub fn build_context(login_id: &str, allowed_programs: &Vec<ProgramType>) -> serde_json::Value {
-    debug!("util.rs, build_context()");
-    json!({"login_id": login_id, "programs": allowed_programs.iter().map(get_template_name).collect::<Vec<_>>()})
+pub fn get_menu_name<'a>(program: &ProgramType) -> &'a str {
+    debug!("util.rs, get_menu_name()");
+    use self::ProgramType::*;
+
+    match program {
+        PecubeESD => "PecubeESD",
+        Grain3DHe => "3D-He",
+        LandLabESD => "LandLab",
+        IceCascade => "IceCascade",
+        CoupledLandscapeThermalSimulator => "CoupledLandscape",
+    }
+}
+
+pub fn build_user_menu(login_id: &str, allowed_programs: &Vec<ProgramType>) -> serde_json::Value {
+    debug!("util.rs, build_user_menu()");
+    json!({"login_id": login_id, "programs": allowed_programs.iter().map(|p| (get_template_name(p), get_menu_name(p))).collect::<Vec<_>>()})
 }
 
 pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response, failure::Error> {
@@ -54,7 +68,8 @@ pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response,
         let allowed_programs = list_of_allowed_programs(&user_login_id)?;
 
         if allowed_programs.contains(&program) {
-            let context = build_context(&user_login_id, &allowed_programs);
+            let context = build_user_menu(&user_login_id, &allowed_programs);
+            debug!("context: {}", context);
             Ok(Response::html(render(get_template_name(program), &context)?))
         } else {
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))

@@ -6,7 +6,7 @@ use error::{WebGuiError};
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ProgramType {
     PecubeESD,
-    GrainFTCorrection,
+    Grain3DHe,
     LandLabESD,
     IceCascade,
     CoupledLandscapeThermalSimulator,
@@ -18,7 +18,7 @@ impl ProgramType {
 
         match num {
             0 => Ok(PecubeESD),
-            1 => Ok(GrainFTCorrection),
+            1 => Ok(Grain3DHe),
             2 => Ok(LandLabESD),
             3 => Ok(IceCascade),
             4 => Ok(CoupledLandscapeThermalSimulator),

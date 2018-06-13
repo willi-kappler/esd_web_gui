@@ -1,6 +1,6 @@
 <html>
 <head>
-  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="/css/menu.css">
   <title>ESD Simulator</title>
 </head>
 <body>
@@ -11,13 +11,13 @@
           <button class="base_property menu_button">Programs</button>
           <div class="menu_content">
             {{#each programs as |name|}}
-              <a href="{{name}}">{{name}}</a>
+              <a href="/{{name.[0]}}">{{name.[1]}}</a>
             {{/each}}
           </div>
         </div>
       </td>
       <td class="logo_column">
-        <img src="images/uni_esd_logo.jpg" width="40%"></img>
+        <img src="/images/uni_esd_logo.jpg" width="40%"></img>
         <h2>Welcome to the ESD Simulation Remote Computing Access</h2>
       </td>
       {{#if login_id}}

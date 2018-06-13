@@ -16,14 +16,14 @@ extern crate toml;
 mod menu;
 mod login;
 mod logout;
-mod program_types;
+mod programs;
 
 // Helper / utils
 mod database;
 mod configuration;
 mod error;
 mod util;
-mod programs;
+mod program_types;
 
 use std::fs::File;
 
@@ -55,6 +55,7 @@ fn main() {
     let _log_handle = log4rs::init_config(config).unwrap();
 
     database::connect_to_db();
+    // database::log_out_everyone().unwrap();
 
     let addr = "0.0.0.0:3030";
     println!("Now listening on {}", addr);
@@ -90,40 +91,45 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         (GET) ["/logout"] => {
             logout::handle(session_id)?
         },
+
+        // Pecaube
         (GET) ["/pecube"] => {
-            pecube::handle_get(session_id)?
+            pecube::about_get(session_id)?
         },
-        (POST) ["/pecube"] => {
-            pecube::handle_post(session_id, request)?
-        },
+
+        // FT Grain Correction
         (GET) ["/grain"] => {
-            grain::handle_get(session_id)?
+            grain::about_get(session_id)?
         },
-        (POST) ["/grain"] => {
-            grain::handle_post(session_id, request)?
+        (GET) ["/grain/load_images"] => {
+            grain::load_images_get(session_id)?
         },
+        (POST) ["/grain/load_images"] => {
+            grain::load_images_post(session_id, request)?
+        },
+
+        // Landlab
         (GET) ["/landlab"] => {
-            landlab::handle_get(session_id)?
+            landlab::about_get(session_id)?
         },
-        (POST) ["/landlab"] => {
-            landlab::handle_post(session_id, request)?
-        },
+
+        // IceCascade
         (GET) ["/icecascade"] => {
-            icecascade::handle_get(session_id)?
+            icecascade::about_get(session_id)?
         },
-        (POST) ["/icecascade"] => {
-            icecascade::handle_post(session_id, request)?
-        },
+
+        // Coupled
         (GET) ["/coupled"] => {
-            coupled::handle_get(session_id)?
-        },
-        (POST) ["/coupled"] => {
-            coupled::handle_post(session_id, request)?
+            coupled::about_get(session_id)?
         },
 
         // Static files:
         (GET) ["/images/uni_esd_logo.jpg"] => {
             let file = File::open("images/uni_esd_logo.jpg")?;
+            Response::from_file("image/jpeg", file)
+        },
+        (GET) ["/images/grain20_photo.jpg"] => {
+            let file = File::open("images/grain20_photo.jpg")?;
             Response::from_file("image/jpeg", file)
         },
         (GET) ["/css/login.css"] => {
