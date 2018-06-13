@@ -345,3 +345,15 @@ pub fn list_of_allowed_programs(user_login_id: &str) -> Result<Vec<ProgramType>,
         }
     }
 }
+
+pub fn log_out_everyone() -> Result<(), failure::Error>  {
+    debug!("database.rs log_out_everyone()");
+    use self::user_info::dsl::*;
+
+    let connection = get_db_connection()?;
+    let _rows_affected : usize = diesel::update(user_info)
+        .set((session_id.eq(""), logged_in.eq(false)))
+        .execute(&*connection)?;
+
+    Ok(())
+}
