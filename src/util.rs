@@ -1,5 +1,4 @@
 use serde::{Serialize};
-use serde_json;
 use handlebars::{Handlebars};
 use failure;
 use rouille::{Response};
@@ -55,9 +54,8 @@ pub fn get_menu_name<'a>(program: &ProgramType) -> &'a str {
     }
 }
 
-pub fn build_user_menu(login_id: &str, allowed_programs: &Vec<ProgramType>) -> serde_json::Value {
-    debug!("util.rs, build_user_menu()");
-    json!({"login_id": login_id, "programs": allowed_programs.iter().map(|p| (get_template_name(p), get_menu_name(p))).collect::<Vec<_>>()})
+pub fn build_program_menu(allowed_programs: &Vec<ProgramType>) -> Vec<(&str, &str)> {
+    allowed_programs.iter().map(|p| (get_template_name(p), get_menu_name(p))).collect::<Vec<_>>()
 }
 
 pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response, failure::Error> {
@@ -68,9 +66,9 @@ pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response,
         let allowed_programs = list_of_allowed_programs(db_id)?;
 
         if allowed_programs.contains(&program) {
-            let context = build_user_menu(&user_name, &allowed_programs);
-            debug!("context: {}", context);
-            Ok(Response::html(render(get_template_name(program), &context)?))
+            let user_menu = json!({"login_id": user_name, "programs": build_program_menu(&allowed_programs)});
+            debug!("user_menu: {}", user_menu);
+            Ok(Response::html(render(get_template_name(program), &user_menu)?))
         } else {
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
         }

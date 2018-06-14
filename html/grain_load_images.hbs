@@ -123,10 +123,9 @@
     <button type="submit" class="font_size_20 vspace2">Upload Image</button>
   </form>
 
-  {{#if stored_images}}
+  {{#if grain_images}}
   <table class="upload_image vspace2">
     <tr>
-      <td>ID</td>
       <td>1) Image Path</td>
       <td>2) Sample name</td>
       <td>3) Image Size</td>
@@ -142,23 +141,22 @@
       <td>13) Rim Width</td>
       <td>14) Ratio Rim / Core</td>
     </tr>
-    {{#each stored_images as |image|}}
+    {{#each grain_images as |image|}}
     <tr>
-      <td>image.id</td>
-      <td>image.path</td>
-      <td>image.sample_name</td>
-      <td>image.size</td>
-      <td>image.mode</td>
-      <td>image.mineral</td>
-      <td>image.ratio_232_238</td>
-      <td>image.ratio_147_238</td>
-      <td>image.orientation</td>
-      <td>image.shape</td>
-      <td>image.pyramids</td>
-      <td>image.broken_tips</td>
-      <td>image.zoned</td>
-      <td>image.rim_width</td>
-      <td>image.ratio_rim_core</td>
+      <td>{{image.path}}</td>
+      <td>{{image.sample_name}}</td>
+      <td>{{image.size}}</td>
+      <td>{{image.mode}}</td>
+      <td>{{image.mineral}}</td>
+      <td>{{image.ratio_232_238}}</td>
+      <td>{{image.ratio_147_238}}</td>
+      <td>{{image.orientation}}</td>
+      <td>{{image.shape}}</td>
+      <td>{{image.pyramids}}</td>
+      <td>{{image.broken_tips}}</td>
+      <td>{{image.zoned}}</td>
+      <td>{{image.rim_width}}</td>
+      <td>{{image.ratio_rim_core}}</td>
     </tr>
     {{/each}}
   </table>

@@ -373,13 +373,13 @@ pub fn log_out_everyone() -> Result<(), failure::Error>  {
     Ok(())
 }
 
-pub fn list_of_allowed_programs(db_id: i32) -> Result<Vec<ProgramType>, failure::Error> {
+pub fn list_of_allowed_programs(user_db_id: i32) -> Result<Vec<ProgramType>, failure::Error> {
     debug!("database.rs, logout()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
     let results : Vec<String> = user_info
-        .filter(id.eq(db_id))
+        .filter(id.eq(user_db_id))
         .select(allowed_programs)
         .get_results(&*connection)?;
     let num_of_results = results.len();
@@ -405,19 +405,19 @@ pub fn list_of_allowed_programs(db_id: i32) -> Result<Vec<ProgramType>, failure:
     }
 }
 
-pub fn list_of_grain_images(user_login_id: i32) -> Result<Vec<GrainImage>, failure::Error> {
+pub fn list_of_grain_images(user_db_id: i32) -> Result<Vec<GrainImage>, failure::Error> {
     debug!("database.rs, list_of_grain_images()");
     use self::grain_images::dsl::*;
 
     let connection = get_db_connection()?;
     let results : Vec<GrainImage> = grain_images
-        .filter(user_id.eq(user_login_id))
+        .filter(user_id.eq(user_db_id))
         .get_results(&*connection)?;
 
     Ok(results)
 }
 
-pub fn delete_grain_images(user_login_id: i32, image_ids: Vec<i32>) -> Result<(), failure::Error> {
+pub fn delete_grain_images(user_db_id: i32, image_ids: Vec<i32>) -> Result<(), failure::Error> {
     debug!("database.rs, delete_grain_images()");
     use self::grain_images::dsl::*;
 
@@ -425,7 +425,7 @@ pub fn delete_grain_images(user_login_id: i32, image_ids: Vec<i32>) -> Result<()
     // diesel::delete(table1::table.filter(table1::id.eq_any(vec![id1, id2, id3])).execute(conn);
     for delete_id in image_ids {
         let _rows_affected : usize = diesel::delete(grain_images)
-            .filter(user_id.eq(user_login_id))
+            .filter(user_id.eq(user_db_id))
             .filter(id.eq(delete_id))
             .execute(&*connection)?;
     }
@@ -433,22 +433,22 @@ pub fn delete_grain_images(user_login_id: i32, image_ids: Vec<i32>) -> Result<()
     Ok(())
 }
 
-pub fn add_grain_image(user_login_id: i32, new_iamge: GrainImage) -> Result<(), failure::Error> {
+pub fn add_grain_image(user_db_id: i32, new_iamge: GrainImage) -> Result<(), failure::Error> {
     debug!("database.rs, delete_grain_images()");
     use self::grain_images::dsl::*;
 
     let connection = get_db_connection()?;
     let _rows_affected : usize = diesel::insert_into(grain_images).values((
-        user_id.eq(user_login_id),
+        user_id.eq(user_db_id),
         path.eq(new_iamge.path),
         sample_name.eq(new_iamge.sample_name),
         size.eq(new_iamge.size),
-        mode.eq(new_iamge.mode as i32),
-        mineral.eq(new_iamge.mineral as i32),
+        mode.eq(new_iamge.mode),
+        mineral.eq(new_iamge.mineral),
         ratio_232_238.eq(new_iamge.ratio_232_238),
         ratio_147_238.eq(new_iamge.ratio_147_238),
-        orientation.eq(new_iamge.orientation as i32),
-        shape.eq(new_iamge.shape as i32),
+        orientation.eq(new_iamge.orientation),
+        shape.eq(new_iamge.shape),
         pyramids.eq(new_iamge.pyramids),
         broken_tips.eq(new_iamge.broken_tips),
         zoned.eq(new_iamge.zoned),
