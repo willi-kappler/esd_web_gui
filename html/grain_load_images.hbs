@@ -32,7 +32,7 @@
     <li>Ratio 147 / 238: ratio of 147Sm and 238U, measured in mol; if 0 mean values are used</li>
     <li>Orientation: defines the orientation of the crystal c-axis to the field of view: <b>parallel</b> or <b>perpendicular</b></li>
     <li>Shape: <b>hexagonal</b>, <b>ellipsoid</b>, <b>cylinder</b>, <b>block</b> (analytical equations from Ketcham et al. 2011)</li>
-    <li>Nr. of pyramids: number of pyramids, required for analytical calculation</li>
+    <li>Pyramids: number of pyramids, required for analytical calculation</li>
     <li>Broken tips: <b>yes</b> or <b>no</b></li>
     <li>Zoned: are radio nuclides inhomogenously distributed, <b>yes</b> or <b>no</b></li>
     <li>Rim width: width of zoned rim</li>
@@ -89,7 +89,7 @@
         <td>6) Ratio 147 / 238</td>
       </tr>
       <tr>
-        <td><input type="file" name="image_file"></td>
+        <td><input type="file" name="path"></td>
         <td><input type="number" name="size" value="0.3998" step="any" required></td>
         <td>
           <select name="mode">
@@ -103,8 +103,8 @@
             <option value="1">zr</option>
           </select>
         </td>
-        <td><input type="number" name="ratio_232" value="0.4444" step="any" required></td>
-        <td><input type="number" name="ratio_147" value="0.0615" step="any" required></td>
+        <td><input type="number" name="ratio_232_238" value="0.4444" step="any" required></td>
+        <td><input type="number" name="ratio_147_238" value="0.0615" step="any" required></td>
       </tr>
     </table>
 
@@ -133,7 +133,7 @@
             <option value="3">block</option>
           </select>
         </td>
-        <td><input type="number" name="pyramid" value="2.0" step="any" required></td>
+        <td><input type="number" name="pyramids" value="2" step="any" required></td>
         <td>
           <select name="broken_tips">
             <option value="0">no</option>
@@ -147,7 +147,7 @@
           </select>
         </td>
         <td><input type="number" name="rim_width" value="20.0" step="any" required></td>
-        <td><input type="number" name="ratio_rim" value="1.0" step="any" required></td>
+        <td><input type="number" name="ratio_rim_core" value="1.0" step="any" required></td>
       </tr>
     </table>
 
