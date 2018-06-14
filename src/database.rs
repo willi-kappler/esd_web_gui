@@ -26,7 +26,46 @@ table! {
 
 /*
     Database created with the following command:
-    CREATE TABLE user_info(id INTEGER PRIMARY KEY ASC, login_id TEXT, session_id TEXT, logged_in INTEGER, full_name TEXT, email TEXT, passwd TEXT);
+    CREATE TABLE user_info(
+        id INTEGER PRIMARY KEY ASC,
+        login_id TEXT,
+        session_id TEXT,
+        logged_in INTEGER,
+        full_name TEXT,
+        email TEXT,
+        passwd TEXT
+    );
+
+    CREATE TABLE user_info(
+        id INTEGER PRIMARY KEY ASC,
+        is_active INTEGER,
+        login_id TEXT,
+        session_id TEXT,
+        logged_in INTEGER,
+        full_name TEXT,
+        email TEXT,
+        passwd TEXT,
+        allowed_programs TEXT
+    );
+
+    CREATE TABLE grain_images(
+        id INTEGER PRIMARY KEY ASC,
+        user_id INTEGER,
+        path TEXT,
+        size REAL,
+        mode INTEGER,
+        mineral INTEGER,
+        ratio_232_238 REAL,
+        ratio_147_238 REAL,
+        orientation INTEGER,
+        shape INTEGER,
+        pyramids INTEGER,
+        broken_tips INTEGER,
+        zoned INTEGER,
+        rim_width REAL,
+        ratio_rim_core REAL
+    );
+
 
     Test user added with the following command:
     insert into user_info (login_id, session_id, logged_in, full_name, email, passwd) values ("test_user", "", 0, "Test User", "test@home.com", "$argon2i$v=19$m=4096,t=3,p=1$hashvalue");
