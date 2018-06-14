@@ -15,7 +15,8 @@
 
   <ol class="vspace2">
     <li>Picture taken from the crystal</li>
-    <li>Pixel size: original resolution of image in microns per pixel</li>
+    <li>Sample name, must be unique</li>
+    <li>Pixel size: original resolution of image in micrometer per pixel</li>
     <li>Mode:
       <ul>
         <li><b>'normal'</b> mode for grains or broken grains (example: Test-1)</li>
@@ -32,64 +33,26 @@
     <li>Ratio 147 / 238: ratio of 147Sm and 238U, measured in mol; if 0 mean values are used</li>
     <li>Orientation: defines the orientation of the crystal c-axis to the field of view: <b>parallel</b> or <b>perpendicular</b></li>
     <li>Shape: <b>hexagonal</b>, <b>ellipsoid</b>, <b>cylinder</b>, <b>block</b> (analytical equations from Ketcham et al. 2011)</li>
-    <li>Pyramids: number of pyramids, required for analytical calculation</li>
+    <li>Pyramids: number of pyramids, required for analytical calculation: 0, 1 or 2</li>
     <li>Broken tips: <b>yes</b> or <b>no</b></li>
     <li>Zoned: are radio nuclides inhomogenously distributed, <b>yes</b> or <b>no</b></li>
-    <li>Rim width: width of zoned rim</li>
+    <li>Rim width: width of zoned rim in micrometer</li>
     <li>Ratio Rim / Core: radio nuclide ratio between rim and core (1: homogenous distribution, &lt;1: rim depleted, &gt;1: rim concentrated)</li>
   </ol>
-
-  {{#if stored_images}}
-  <table class="upload_image vspace2">
-    <tr>
-      <td>ID</td>
-      <td>1) Image Path</td>
-      <td>2) Image Size</td>
-      <td>3) Mode</td>
-      <td>4) Mineral</td>
-      <td>5) Ratio 232 / 238</td>
-      <td>6) Ratio 147 / 238</td>
-      <td>7) Orientation</td>
-      <td>8) Shape</td>
-      <td>9) Pyramids</td>
-      <td>10) Broken Tips</td>
-      <td>11) Zoned</td>
-      <td>12) Rim Width</td>
-      <td>13) Ratio Rim / Core</td>
-    </tr>
-    {{#each stored_images as |image|}}
-    <tr>
-      <td>image.id</td>
-      <td>image.path</td>
-      <td>image.size</td>
-      <td>image.mode</td>
-      <td>image.mineral</td>
-      <td>image.ratio_232_238</td>
-      <td>image.ratio_147_238</td>
-      <td>image.orientation</td>
-      <td>image.shape</td>
-      <td>image.pyramids</td>
-      <td>image.broken_tips</td>
-      <td>image.zoned</td>
-      <td>image.rim_width</td>
-      <td>image.ratio_rim_core</td>
-    </tr>
-    {{/each}}
-  </table>
-  {{/if}}
 
   <form action="/grain/load_images" method="post" class="vspace2">
     <table class="upload_image">
       <tr>
         <td>1) Image Path</td>
-        <td>2) Image Size</td>
-        <td>3) Mode</td>
-        <td>4) Mineral</td>
-        <td>5) Ratio 232 / 238</td>
-        <td>6) Ratio 147 / 238</td>
+        <td>2) Sample name</td>
+        <td>3) Image Size</td>
+        <td>4) Mode</td>
+        <td>5) Mineral</td>
+        <td>6) Ratio 232 / 238</td>
       </tr>
       <tr>
         <td><input type="file" name="path"></td>
+        <td><input type="text" name="sample_name"></td>
         <td><input type="number" name="size" value="0.3998" step="any" required></td>
         <td>
           <select name="mode">
@@ -104,21 +67,22 @@
           </select>
         </td>
         <td><input type="number" name="ratio_232_238" value="0.4444" step="any" required></td>
-        <td><input type="number" name="ratio_147_238" value="0.0615" step="any" required></td>
       </tr>
     </table>
 
     <table class="upload_image vspace1">
       <tr>
-        <td>7) Orientation</td>
-        <td>8) Shape</td>
-        <td>9) Pyramids</td>
-        <td>10) Broken Tips</td>
-        <td>11) Zoned</td>
-        <td>12) Rim Width</td>
-        <td>13) Ratio Rim / Core</td>
+        <td>7) Ratio 147 / 238</td>
+        <td>8) Orientation</td>
+        <td>9) Shape</td>
+        <td>10) Pyramids</td>
+        <td>11) Broken Tips</td>
+        <td>12) Zoned</td>
+        <td>13) Rim Width</td>
+        <td>14) Ratio Rim / Core</td>
       </tr>
       <tr>
+        <td><input type="number" name="ratio_147_238" value="0.0615" step="any" required></td>
         <td>
           <select name="orientation">
             <option value="0">parallel</option>
@@ -133,7 +97,13 @@
             <option value="3">block</option>
           </select>
         </td>
-        <td><input type="number" name="pyramids" value="2" step="any" required></td>
+        <td>
+          <select name="pyramids">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </td>
         <td>
           <select name="broken_tips">
             <option value="0">no</option>
@@ -150,8 +120,48 @@
         <td><input type="number" name="ratio_rim_core" value="1.0" step="any" required></td>
       </tr>
     </table>
-
-    <button type="submit" class="submit_style vspace2">Upload Image</button>
+    <button type="submit" class="font_size_20 vspace2">Upload Image</button>
   </form>
+
+  {{#if stored_images}}
+  <table class="upload_image vspace2">
+    <tr>
+      <td>ID</td>
+      <td>1) Image Path</td>
+      <td>2) Sample name</td>
+      <td>3) Image Size</td>
+      <td>4) Mode</td>
+      <td>5) Mineral</td>
+      <td>6) Ratio 232 / 238</td>
+      <td>7) Ratio 147 / 238</td>
+      <td>8) Orientation</td>
+      <td>9) Shape</td>
+      <td>10) Pyramids</td>
+      <td>11) Broken Tips</td>
+      <td>12) Zoned</td>
+      <td>13) Rim Width</td>
+      <td>14) Ratio Rim / Core</td>
+    </tr>
+    {{#each stored_images as |image|}}
+    <tr>
+      <td>image.id</td>
+      <td>image.path</td>
+      <td>image.sample_name</td>
+      <td>image.size</td>
+      <td>image.mode</td>
+      <td>image.mineral</td>
+      <td>image.ratio_232_238</td>
+      <td>image.ratio_147_238</td>
+      <td>image.orientation</td>
+      <td>image.shape</td>
+      <td>image.pyramids</td>
+      <td>image.broken_tips</td>
+      <td>image.zoned</td>
+      <td>image.rim_width</td>
+      <td>image.ratio_rim_core</td>
+    </tr>
+    {{/each}}
+  </table>
+  {{/if}}
 
 {{> footer }}

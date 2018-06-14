@@ -64,11 +64,11 @@ pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response,
     debug!("util.rs, show_program()");
 
     if logged_in(session_id)? {
-        let user_login_id = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(&user_login_id)?;
+        let (user_name, db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(db_id)?;
 
         if allowed_programs.contains(&program) {
-            let context = build_user_menu(&user_login_id, &allowed_programs);
+            let context = build_user_menu(&user_name, &allowed_programs);
             debug!("context: {}", context);
             Ok(Response::html(render(get_template_name(program), &context)?))
         } else {
