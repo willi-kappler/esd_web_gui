@@ -412,6 +412,7 @@ pub fn list_of_grain_images(user_db_id: i32) -> Result<Vec<GrainImage>, failure:
     let connection = get_db_connection()?;
     let results : Vec<GrainImage> = grain_images
         .filter(user_id.eq(user_db_id))
+        .order(sample_name.asc())
         .get_results(&*connection)?;
 
     Ok(results)
@@ -454,4 +455,18 @@ pub fn add_grain_image(user_db_id: i32, new_iamge: GrainImage) -> Result<(), fai
     )).execute(&*connection)?;
 
     Ok(())
+}
+
+pub fn list_of_grain_samples(user_db_id: i32) -> Result<Vec<String>, failure::Error> {
+    debug!("database.rs, list_of_grain_images()");
+    use self::grain_images::dsl::*;
+
+    let connection = get_db_connection()?;
+    let results : Vec<String> = grain_images
+        .filter(user_id.eq(user_db_id))
+        .select(sample_name)
+        .distinct()
+        .get_results(&*connection)?;
+
+    Ok(results)
 }

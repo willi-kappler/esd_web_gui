@@ -1,0 +1,31 @@
+{{> header }}
+
+  <ul class="menu_bar">
+    <li class="menu_item"><a href="/grain">About 3D-He</a></li>
+    <li class="menu_item"><a href="/grain/load_images">Load Images</a></li>
+    <li class="menu_item"><a href="/grain/outline_images" class="active_item">Set Grain Outline</a></li>
+    <li class="menu_item"><a href="">Item3</a></li>
+  </ul>
+
+  {{#if grain_samples}}
+    <form action="/grain/outline_images" method="post" class="vspace2">
+      Select sample:
+      <select name="sample">
+      {{#each grain_samples as |sample|}}
+        <option value="{{sample}}">{{sample}}</option>
+      {{/each}}
+    </select>
+    <button type="submit">edit images</button>
+    </form>
+  {{else}}
+    <h2>You have to upload some images first</h2>
+  {{/if}}
+
+
+  {{#if sample_images}}
+    <form action="/grain/store_outlines" method="post" class="vspace2">
+      <button type="submit">Store outlines</button>
+    </form>
+  {{/if}}
+
+{{> footer }}

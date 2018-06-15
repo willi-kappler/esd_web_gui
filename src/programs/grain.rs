@@ -8,7 +8,7 @@ use serde::{Serializer};
 use util::{render, show_program, build_program_menu, get_template_name};
 use program_types::{ProgramType};
 use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images,
-    add_grain_image, delete_grain_images};
+    add_grain_image, delete_grain_images, list_of_grain_samples};
 use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
@@ -176,6 +176,51 @@ pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Respons
             delete_grain_images(user_db_id, data.remove)?;
 
             Ok(Response::redirect_303("/grain/load_images"))
+        } else {
+            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        }
+    } else {
+        Ok(Response::redirect_303("/"))
+    }
+}
+
+pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> {
+    debug!("grain.rs, outline_image_get()");
+    if logged_in(session_id)? {
+        let (user_name, user_db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+
+        if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            let context = json!({
+                "login_id": user_name,
+                "programs": build_program_menu(&allowed_programs),
+                "grain_samples": list_of_grain_samples(user_db_id)?
+            });
+
+            debug!("context: {}", context);
+
+            Ok(Response::html(render("grain_outline_images", &context)?))
+        } else {
+            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        }
+    } else {
+        Ok(Response::redirect_303("/"))
+    }
+}
+
+pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
+    debug!("grain.rs, outline_image_post()");
+    if logged_in(session_id)? {
+        let (user_name, user_db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+
+        if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            let data = post_input!(request, {
+                sample: String
+            })?;
+
+
+            Ok(Response::redirect_303("/grain/outline_images"))
         } else {
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
         }
