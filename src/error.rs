@@ -22,4 +22,10 @@ pub enum WebGuiError {
     NoProgramsForUser,
     #[fail(display = "No filename for grain image found")]
     NoFilenameForGrainImage,
+    #[fail(display = "Grain / sample image not found for user")]
+    GrainImageNotFoundForUser,
+    #[fail(display = "User is not allowed to use that program")]
+    ProgramNotAllowedForUser,
+    #[fail(display = "User in not logged in")]
+    UserNotLoggedIn,
 }

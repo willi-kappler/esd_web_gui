@@ -70,7 +70,7 @@ fn main() {
                 }
                 Err(e) => {
                     error!("main.rs, handle_request: An error occured: {}", e);
-                    Response::empty_404()
+                    Response::html("An error occured. Please contact the administrator")
                 }
             }
 
@@ -117,6 +117,10 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             grain::outline_images_post(session_id, request)?
         },
 
+        (GET) ["/grain/user_data/{username}/{imagename}", username: String, imagename: String] => {
+            grain::sample_image_get(session_id, username, imagename)?
+        },
+
 
         // Landlab
         (GET) ["/landlab"] => {
@@ -150,6 +154,6 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             let file = File::open("css/menu.css")?;
             Response::from_file("text/css", file)
         },
-        _ => Response::html("NOT FOUND")
+        _ => Response::html("Page not found")
     ))
 }

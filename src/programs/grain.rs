@@ -8,7 +8,7 @@ use serde::{Serializer};
 use util::{render, show_program, build_program_menu, get_template_name};
 use program_types::{ProgramType};
 use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images,
-    add_grain_image, delete_grain_images, list_of_grain_samples};
+    add_grain_image, delete_grain_images, list_of_grain_samples, user_has_image};
 use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
@@ -226,5 +226,26 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
         }
     } else {
         Ok(Response::redirect_303("/"))
+    }
+}
+
+pub fn sample_image_get(session_id: &str, username: String, imagename: String) -> Result<Response, failure::Error> {
+    debug!("grain.rs, sample_image_get()");
+    if logged_in(session_id)? {
+        let (user_name, user_db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+
+        if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            if username == user_name && user_has_image(user_db_id, &imagename)? {
+                let file = File::open(format!("user_data/{}/{}", username, imagename))?;
+                Ok(Response::from_file("image/jpeg", file))
+            } else {
+                Err(WebGuiError::GrainImageNotFoundForUser.into())
+            }
+        } else {
+            Err(WebGuiError::ProgramNotAllowedForUser.into())
+        }
+    } else {
+        Err(WebGuiError::UserNotLoggedIn.into())
     }
 }

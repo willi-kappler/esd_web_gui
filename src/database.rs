@@ -470,3 +470,26 @@ pub fn list_of_grain_samples(user_db_id: i32) -> Result<Vec<String>, failure::Er
 
     Ok(results)
 }
+
+pub fn user_has_image(user_db_id: i32, imagename: &str) -> Result<bool, failure::Error> {
+    debug!("database.rs, user_has_image()");
+    use self::grain_images::dsl::*;
+
+    let connection = get_db_connection()?;
+
+/*
+    let result = grain_images
+        .filter(user_id.eq(user_db_id))
+        .filter(path.eq(imagename))
+        .get_result::<u32>(&*connection)?;
+        .count()
+
+    if result == 0 {
+        Ok(false)
+    } else {
+        Ok(true)
+    }
+*/
+
+    Ok(false)
+}

@@ -24,6 +24,9 @@
 
   {{#if sample_images}}
     <form action="/grain/store_outlines" method="post" class="vspace2">
+      {{#each sample_images as |image|}}
+        <img src="/grain/user_data/{{image.username}}/{{image.imagename}}">
+      {{/each}}
       <button type="submit">Store outlines</button>
     </form>
   {{/if}}
