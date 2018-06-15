@@ -1,9 +1,14 @@
-use rouille::{Response, Request};
+use std::fs::{create_dir_all, File};
+use std::io::{BufWriter, Write};
+
+use rouille::{Response, Request, input};
 use failure;
+use serde::{Serializer};
 
 use util::{render, show_program, build_program_menu, get_template_name};
 use program_types::{ProgramType};
 use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images, add_grain_image};
+use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
 pub struct GrainImage {
@@ -12,11 +17,15 @@ pub struct GrainImage {
     pub path: String,
     pub sample_name: String,
     pub size: f64,
+    #[serde(serialize_with = "grain_mode")]
     pub mode: i32,
+    #[serde(serialize_with = "grain_mineral")]
     pub mineral: i32,
     pub ratio_232_238: f64,
     pub ratio_147_238: f64,
+    #[serde(serialize_with = "grain_orientation")]
     pub orientation: i32,
+    #[serde(serialize_with = "grain_shape")]
     pub shape: i32,
     pub pyramids: i32,
     pub broken_tips: bool,
@@ -25,11 +34,47 @@ pub struct GrainImage {
     pub ratio_rim_core: f64,
 }
 
+fn grain_mode<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer {
+    match mode {
+        0 => serializer.serialize_str("normal"),
+        _ => serializer.serialize_str("cut")
+    }
+}
+
+fn grain_mineral<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer {
+    match mode {
+        0 => serializer.serialize_str("ap"),
+        _ => serializer.serialize_str("zr")
+    }
+}
+
+fn grain_orientation<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer {
+    match mode {
+        0 => serializer.serialize_str("parallel"),
+        _ => serializer.serialize_str("perpendicular")
+    }
+}
+
+fn grain_shape<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer {
+    match mode {
+        0 => serializer.serialize_str("hexagonal"),
+        1 => serializer.serialize_str("ellipsoid"),
+        2 => serializer.serialize_str("cylinder"),
+        _ => serializer.serialize_str("block")
+    }
+}
+
 pub fn about_get(session_id: &str) -> Result<Response, failure::Error> {
+    debug!("grain.rs, about_get()");
     show_program(session_id, &ProgramType::Grain3DHe)
 }
 
 pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
+    debug!("grain.rs, load_image_get()");
     if logged_in(session_id)? {
         let (user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
@@ -51,13 +96,14 @@ pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
 }
 
 pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
+    debug!("grain.rs, load_image_post()");
     if logged_in(session_id)? {
         let (user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let data = post_input!(request, {
-                path: String,
+                image: input::post::BufferedFile,
                 sample_name: String,
                 size: f64,
                 mode: i32,
@@ -73,10 +119,22 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 ratio_rim_core: f64,
             })?;
 
+            let image_filename = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
+
+            let user_path = format!("user_data/{}", user_name);
+
+            create_dir_all(&user_path)?;
+
+            let image_path = format!("{}/{}", user_path, image_filename);
+
+            BufWriter::new(File::create(image_path)?).write_all(&data.image.data)?;
+
+            debug!("mime: {}, filename: {}, filelength: {}", data.image.mime, image_filename, data.image.data.len());
+
             add_grain_image(user_db_id, GrainImage {
                 id: 0, // Will be created automatically in database
                 user_id: user_db_id,
-                path: data.path,
+                path: image_filename,
                 sample_name: data.sample_name,
                 size: data.size,
                 mode: data.mode,

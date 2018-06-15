@@ -20,4 +20,6 @@ pub enum WebGuiError {
     UnknownProgramType,
     #[fail(display = "No programs for user defined in database")]
     NoProgramsForUser,
+    #[fail(display = "No filename for grain image found")]
+    NoFilenameForGrainImage,
 }

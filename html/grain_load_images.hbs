@@ -40,7 +40,7 @@
     <li>Ratio Rim / Core: radio nuclide ratio between rim and core (1: homogenous distribution, &lt;1: rim depleted, &gt;1: rim concentrated)</li>
   </ol>
 
-  <form action="/grain/load_images" method="post" class="vspace2">
+  <form action="/grain/load_images" method="post" class="vspace2" enctype="multipart/form-data">
     <table class="upload_image">
       <tr>
         <td>1) Image Path</td>
@@ -51,7 +51,7 @@
         <td>6) Ratio 232 / 238</td>
       </tr>
       <tr>
-        <td><input type="file" name="path"></td>
+        <td><input type="file" name="image"></td>
         <td><input type="text" name="sample_name"></td>
         <td><input type="number" name="size" value="0.3998" step="any" required></td>
         <td>
