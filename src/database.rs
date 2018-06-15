@@ -374,7 +374,7 @@ pub fn log_out_everyone() -> Result<(), failure::Error>  {
 }
 
 pub fn list_of_allowed_programs(user_db_id: i32) -> Result<Vec<ProgramType>, failure::Error> {
-    debug!("database.rs, logout()");
+    debug!("database.rs, list_of_allowed_programs()");
     use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
