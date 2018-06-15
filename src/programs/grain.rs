@@ -7,7 +7,8 @@ use serde::{Serializer};
 
 use util::{render, show_program, build_program_menu, get_template_name};
 use program_types::{ProgramType};
-use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images, add_grain_image};
+use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images,
+    add_grain_image, delete_grain_images};
 use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
@@ -149,6 +150,30 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 rim_width: data.rim_width,
                 ratio_rim_core: data.ratio_rim_core,
             })?;
+
+            Ok(Response::redirect_303("/grain/load_images"))
+        } else {
+            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        }
+    } else {
+        Ok(Response::redirect_303("/"))
+    }
+}
+
+pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
+    debug!("grain.rs, remove_image_post()");
+    if logged_in(session_id)? {
+        let (user_name, user_db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+
+        if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            let data = post_input!(request, {
+                remove: Vec<i32>
+            })?;
+
+            debug!("remove: {:?}", data.remove);
+
+            delete_grain_images(user_db_id, data.remove)?;
 
             Ok(Response::redirect_303("/grain/load_images"))
         } else {

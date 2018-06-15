@@ -43,9 +43,9 @@
   <form action="/grain/load_images" method="post" class="vspace2" enctype="multipart/form-data">
     <table class="upload_image">
       <tr>
-        <td>1) Image Path</td>
+        <td>1) Image name</td>
         <td>2) Sample name</td>
-        <td>3) Image Size</td>
+        <td>3) Pixel size</td>
         <td>4) Mode</td>
         <td>5) Mineral</td>
         <td>6) Ratio 232 / 238</td>
@@ -76,10 +76,10 @@
         <td>8) Orientation</td>
         <td>9) Shape</td>
         <td>10) Pyramids</td>
-        <td>11) Broken Tips</td>
+        <td>11) Broken tips</td>
         <td>12) Zoned</td>
-        <td>13) Rim Width</td>
-        <td>14) Ratio Rim / Core</td>
+        <td>13) Rim width</td>
+        <td>14) Ratio rim / core</td>
       </tr>
       <tr>
         <td><input type="number" name="ratio_147_238" value="0.0615" step="any" required></td>
@@ -124,42 +124,47 @@
   </form>
 
   {{#if grain_images}}
-  <table class="upload_image vspace2">
-    <tr>
-      <td>1) Image Path</td>
-      <td>2) Sample name</td>
-      <td>3) Image Size</td>
-      <td>4) Mode</td>
-      <td>5) Mineral</td>
-      <td>6) Ratio 232 / 238</td>
-      <td>7) Ratio 147 / 238</td>
-      <td>8) Orientation</td>
-      <td>9) Shape</td>
-      <td>10) Pyramids</td>
-      <td>11) Broken Tips</td>
-      <td>12) Zoned</td>
-      <td>13) Rim Width</td>
-      <td>14) Ratio Rim / Core</td>
-    </tr>
-    {{#each grain_images as |image|}}
-    <tr>
-      <td>{{image.path}}</td>
-      <td>{{image.sample_name}}</td>
-      <td>{{image.size}}</td>
-      <td>{{image.mode}}</td>
-      <td>{{image.mineral}}</td>
-      <td>{{image.ratio_232_238}}</td>
-      <td>{{image.ratio_147_238}}</td>
-      <td>{{image.orientation}}</td>
-      <td>{{image.shape}}</td>
-      <td>{{image.pyramids}}</td>
-      <td>{{image.broken_tips}}</td>
-      <td>{{image.zoned}}</td>
-      <td>{{image.rim_width}}</td>
-      <td>{{image.ratio_rim_core}}</td>
-    </tr>
-    {{/each}}
-  </table>
+  <form action="/grain/remove_images" method="post" class="vspace2">
+    <table class="upload_image">
+      <tr>
+        <td>Remove?</td>
+        <td>1) Image name</td>
+        <td>2) Sample <br> name</td>
+        <td>3) Pixel <br> size</td>
+        <td>4) Mode</td>
+        <td>5) Mineral</td>
+        <td>6) Ratio <br> 232 / 238</td>
+        <td>7) Ratio <br> 147 / 238</td>
+        <td>8) Orientation</td>
+        <td>9) Shape</td>
+        <td>10) Pyramids</td>
+        <td>11) Broken <br> tips</td>
+        <td>12) Zoned</td>
+        <td>13) Rim <br> width</td>
+        <td>14) Ratio <br> rim / core</td>
+      </tr>
+      {{#each grain_images as |image|}}
+      <tr>
+        <td><input type="checkbox" name="remove" value="{{image.id}}"></td>
+        <td>{{image.path}}</td>
+        <td>{{image.sample_name}}</td>
+        <td>{{image.size}}</td>
+        <td>{{image.mode}}</td>
+        <td>{{image.mineral}}</td>
+        <td>{{image.ratio_232_238}}</td>
+        <td>{{image.ratio_147_238}}</td>
+        <td>{{image.orientation}}</td>
+        <td>{{image.shape}}</td>
+        <td>{{image.pyramids}}</td>
+        <td>{{image.broken_tips}}</td>
+        <td>{{image.zoned}}</td>
+        <td>{{image.rim_width}}</td>
+        <td>{{image.ratio_rim_core}}</td>
+      </tr>
+      {{/each}}
+    </table>
+    <button type="submit" class="font_size_20 vspace2">Remove selected</button>
+  </form>
   {{/if}}
 
 {{> footer }}

@@ -423,12 +423,9 @@ pub fn delete_grain_images(user_db_id: i32, image_ids: Vec<i32>) -> Result<(), f
 
     let connection = get_db_connection()?;
     // diesel::delete(table1::table.filter(table1::id.eq_any(vec![id1, id2, id3])).execute(conn);
-    for delete_id in image_ids {
-        let _rows_affected : usize = diesel::delete(grain_images)
-            .filter(user_id.eq(user_db_id))
-            .filter(id.eq(delete_id))
-            .execute(&*connection)?;
-    }
+    let _rows_affected : usize = diesel::delete(grain_images)
+        .filter(id.eq_any(image_ids))
+        .execute(&*connection)?;
 
     Ok(())
 }

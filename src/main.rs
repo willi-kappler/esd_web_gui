@@ -107,6 +107,9 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         (POST) ["/grain/load_images"] => {
             grain::load_images_post(session_id, request)?
         },
+        (POST) ["/grain/remove_images"] => {
+            grain::remove_images_post(session_id, request)?
+        },
 
         // Landlab
         (GET) ["/landlab"] => {
