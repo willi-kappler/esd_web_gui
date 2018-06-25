@@ -18,7 +18,7 @@ mod login;
 mod logout;
 mod programs;
 
-// Helper / utils
+// Helper / utils:
 mod database;
 mod configuration;
 mod error;
@@ -55,6 +55,7 @@ fn main() {
     let _log_handle = log4rs::init_config(config).unwrap();
 
     database::connect_to_db();
+    // Enable in final release, disable for debugging
     // database::log_out_everyone().unwrap();
 
     let addr = "0.0.0.0:3030";
@@ -92,12 +93,12 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             logout::handle(session_id)?
         },
 
-        // Pecaube
+        // Pecaube:
         (GET) ["/pecube"] => {
             pecube::about_get(session_id)?
         },
 
-        // FT Grain Correction
+        // FT Grain Correction:
         (GET) ["/grain"] => {
             grain::about_get(session_id)?
         },
@@ -122,17 +123,17 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         },
 
 
-        // Landlab
+        // Landlab:
         (GET) ["/landlab"] => {
             landlab::about_get(session_id)?
         },
 
-        // IceCascade
+        // IceCascade:
         (GET) ["/icecascade"] => {
             icecascade::about_get(session_id)?
         },
 
-        // Coupled
+        // Coupled:
         (GET) ["/coupled"] => {
             coupled::about_get(session_id)?
         },
