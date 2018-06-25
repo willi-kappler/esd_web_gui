@@ -476,20 +476,16 @@ pub fn user_has_image(user_db_id: i32, imagename: &str) -> Result<bool, failure:
     use self::grain_images::dsl::*;
 
     let connection = get_db_connection()?;
-
-/*
-    let result = grain_images
+    let results : Vec<i32> = grain_images
         .filter(user_id.eq(user_db_id))
         .filter(path.eq(imagename))
-        .get_result::<u32>(&*connection)?;
-        .count()
+        .select(id)
+        .get_results(&*connection)?;
 
-    if result == 0 {
-        Ok(false)
-    } else {
-        Ok(true)
+    let num_of_results = results.len();
+
+    match num_of_results {
+        0 => Ok(false),
+        _ => Ok(true),
     }
-*/
-
-    Ok(false)
 }
