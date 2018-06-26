@@ -7,8 +7,8 @@ use serde::{Serializer};
 
 use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
 use program_types::{ProgramType};
-use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images,
-    add_grain_image, delete_grain_images, list_of_grain_samples, user_has_image};
+use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images, add_grain_image,
+    delete_grain_images, list_of_grain_samples, user_has_image, list_of_selected_grain_images};
 use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
@@ -122,9 +122,11 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 
             let image_filename = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
             let image_filename = replace_characters(&image_filename);
+            let samplename = replace_characters(&data.sample_name);
 
-            let user_path = format!("user_data/{}/{}", user_name, data.sample_name);
-            let user_path = replace_characters(&user_path);
+            let user_path = format!("user_data/{}/{}", user_name, samplename);
+
+            debug!("user_path: {}", user_path);
 
             create_dir_all(&user_path)?;
 
@@ -138,7 +140,7 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 id: 0, // Will be created automatically in database
                 user_id: user_db_id,
                 path: image_filename,
-                sample_name: data.sample_name,
+                sample_name: samplename,
                 size: data.size,
                 mode: data.mode,
                 mineral: data.mineral,
@@ -213,16 +215,26 @@ pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> 
 pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, outline_image_post()");
     if logged_in(session_id)? {
-        let (_user_name, user_db_id) = login_id(session_id)?;
+        let (user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
-            let _data = post_input!(request, {
+            let data = post_input!(request, {
                 sample: String
             })?;
 
+            let samplename = replace_characters(&data.sample);
+            let sampleimages = list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
+                |imagename| format!("{}/{}/{}", user_name, samplename, imagename)).collect::<Vec<String>>();
 
-            Ok(Response::redirect_303("/grain/outline_images"))
+            let context = json!({
+                "login_id": user_name,
+                "programs": build_program_menu(&allowed_programs),
+                "grain_samples": list_of_grain_samples(user_db_id)?,
+                "sample_images": sampleimages
+            });
+
+            Ok(Response::html(render("grain_outline_images", &context)?))
         } else {
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
         }
@@ -238,12 +250,13 @@ pub fn sample_image_get(session_id: &str, username: String, samplename: String, 
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
-            let username = replace_characters(&username);
             let samplename = replace_characters(&samplename);
             let imagename = replace_characters(&imagename);
 
             if username == user_name && user_has_image(user_db_id, &samplename, &imagename)? {
-                let file = File::open(format!("user_data/{}/{}/{}", username, samplename, imagename))?;
+                let filename = format!("user_data/{}/{}/{}", username, samplename, imagename);
+                debug!("image filename: {}", filename);
+                let file = File::open(filename)?;
                 Ok(Response::from_file("image/jpeg", file))
             } else {
                 Err(WebGuiError::GrainImageNotFoundForUser.into())

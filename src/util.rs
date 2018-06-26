@@ -80,6 +80,6 @@ pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response,
 
 pub fn replace_characters(input: &str) -> String {
     input.chars().filter(|c|
-        c.is_ascii_alphanumeric() || *c == '_' || *c == '.'
+        c.is_ascii_alphanumeric() || *c == '_' || *c == '.' || *c == '-'
     ).collect()
 }
