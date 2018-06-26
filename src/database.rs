@@ -423,8 +423,8 @@ pub fn delete_grain_images(user_db_id: i32, image_ids: Vec<i32>) -> Result<(), f
     use self::grain_images::dsl::*;
 
     let connection = get_db_connection()?;
-    // diesel::delete(table1::table.filter(table1::id.eq_any(vec![id1, id2, id3])).execute(conn);
     let _rows_affected : usize = diesel::delete(grain_images)
+        .filter(user_id.eq(user_db_id))
         .filter(id.eq_any(image_ids))
         .execute(&*connection)?;
 
@@ -471,7 +471,7 @@ pub fn list_of_grain_samples(user_db_id: i32) -> Result<Vec<String>, failure::Er
     Ok(results)
 }
 
-pub fn user_has_image(user_db_id: i32, imagename: &str) -> Result<bool, failure::Error> {
+pub fn user_has_image(user_db_id: i32, samplename: &str, imagename: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, user_has_image()");
     use self::grain_images::dsl::*;
 
@@ -479,6 +479,7 @@ pub fn user_has_image(user_db_id: i32, imagename: &str) -> Result<bool, failure:
     let results : Vec<i32> = grain_images
         .filter(user_id.eq(user_db_id))
         .filter(path.eq(imagename))
+        .filter(sample_name.eq(samplename))
         .select(id)
         .get_results(&*connection)?;
 

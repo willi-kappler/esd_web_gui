@@ -5,7 +5,7 @@ use rouille::{Response, Request, input};
 use failure;
 use serde::{Serializer};
 
-use util::{render, show_program, build_program_menu, get_template_name};
+use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
 use program_types::{ProgramType};
 use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images,
     add_grain_image, delete_grain_images, list_of_grain_samples, user_has_image};
@@ -121,8 +121,10 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
             })?;
 
             let image_filename = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
+            let image_filename = replace_characters(&image_filename);
 
-            let user_path = format!("user_data/{}", user_name);
+            let user_path = format!("user_data/{}/{}", user_name, data.sample_name);
+            let user_path = replace_characters(&user_path);
 
             create_dir_all(&user_path)?;
 
@@ -163,7 +165,7 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, remove_image_post()");
     if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
+        let (_user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
@@ -211,11 +213,11 @@ pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> 
 pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, outline_image_post()");
     if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
+        let (_user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
-            let data = post_input!(request, {
+            let _data = post_input!(request, {
                 sample: String
             })?;
 
@@ -229,15 +231,19 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
     }
 }
 
-pub fn sample_image_get(session_id: &str, username: String, imagename: String) -> Result<Response, failure::Error> {
+pub fn sample_image_get(session_id: &str, username: String, samplename: String, imagename: String) -> Result<Response, failure::Error> {
     debug!("grain.rs, sample_image_get()");
     if logged_in(session_id)? {
         let (user_name, user_db_id) = login_id(session_id)?;
         let allowed_programs = list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
-            if username == user_name && user_has_image(user_db_id, &imagename)? {
-                let file = File::open(format!("user_data/{}/{}", username, imagename))?;
+            let username = replace_characters(&username);
+            let samplename = replace_characters(&samplename);
+            let imagename = replace_characters(&imagename);
+
+            if username == user_name && user_has_image(user_db_id, &samplename, &imagename)? {
+                let file = File::open(format!("user_data/{}/{}/{}", username, samplename, imagename))?;
                 Ok(Response::from_file("image/jpeg", file))
             } else {
                 Err(WebGuiError::GrainImageNotFoundForUser.into())
