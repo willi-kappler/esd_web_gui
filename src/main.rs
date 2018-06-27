@@ -11,6 +11,7 @@ extern crate serde;
 extern crate argon2;
 extern crate log4rs;
 extern crate toml;
+extern crate image;
 
 // Request handler:
 mod menu;
