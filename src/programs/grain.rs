@@ -4,6 +4,7 @@ use std::io::{BufWriter, Write};
 use rouille::{Response, Request, input};
 use failure;
 use serde::{Serializer};
+use image;
 
 use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
 use program_types::{ProgramType};
@@ -120,26 +121,41 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 ratio_rim_core: f64,
             })?;
 
-            let image_filename = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
-            let image_filename = replace_characters(&image_filename);
+            let image_input = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
+            let image_input = replace_characters(&image_input);
+
+            let image_output = match image_input.rfind('.') {
+                None => format!("{}.jpg", image_input),
+                Some(n) => format!("{}.jpg", image_input[..n].to_string()),
+            };
+
             let samplename = replace_characters(&data.sample_name);
 
             let user_path = format!("user_data/{}/{}", user_name, samplename);
 
-            debug!("user_path: {}", user_path);
+            // debug!("user_path: {}", user_path);
 
             create_dir_all(&user_path)?;
 
-            let image_path = format!("{}/{}", user_path, image_filename);
+            let image_path_in = format!("{}/{}", user_path, image_input);
+            let image_path_out = format!("{}/{}", user_path, image_output);
 
-            BufWriter::new(File::create(image_path)?).write_all(&data.image.data)?;
+            BufWriter::new(File::create(&image_path_in)?).write_all(&data.image.data)?;
 
-            debug!("mime: {}, filename: {}, filelength: {}", data.image.mime, image_filename, data.image.data.len());
+            let img_in = image::open(&image_path_in)?;
+
+            // TODO: shrink images
+            let img_out = image::imageops::resize(&img_in, 100, 100, image::FilterType::Lanczos3);
+
+            img_out.save(image_path_out)?;
+
+
+            debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
 
             add_grain_image(user_db_id, GrainImage {
                 id: 0, // Will be created automatically in database
                 user_id: user_db_id,
-                path: image_filename,
+                path: image_output,
                 sample_name: samplename,
                 size: data.size,
                 mode: data.mode,
