@@ -4,7 +4,7 @@ use std::io::{BufWriter, Write};
 use rouille::{Response, Request, input};
 use failure;
 use serde::{Serializer};
-use image;
+use image::{self, GenericImage};
 
 use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
 use program_types::{ProgramType};
@@ -145,10 +145,12 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
             let img_in = image::open(&image_path_in)?;
 
             // TODO: shrink images
-            let img_out = image::imageops::resize(&img_in, 100, 100, image::FilterType::Lanczos3);
+            let factor : f64 = data.size / 2.0;
+            let new_width = ((img_in.width() as f64) * factor) as u32;
+            let new_height = ((img_in.height() as f64) * factor) as u32;
+            let img_out = image::imageops::resize(&img_in, new_width, new_height, image::FilterType::Lanczos3);
 
             img_out.save(image_path_out)?;
-
 
             debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
 
