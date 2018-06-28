@@ -24,11 +24,16 @@
 
   {{#if sample_images}}
     <form action="/grain/store_outlines" method="post" class="vspace2">
-      {{#each sample_images as |image|}}
-        <img src="/grain/user_data/{{image}}">
-      {{/each}}
+      <div id="div_element">
+        {{#each sample_images as |image|}}
+          <img name="grain_images" src="/grain/user_data/{{image}}">
+        {{/each}}
+      </div>
       <button type="submit">Store outlines</button>
     </form>
   {{/if}}
+
+  <script src="/js/jsfeat-min.js"></script>
+  <script src="/js/grain_outline.js"></script>
 
 {{> footer }}

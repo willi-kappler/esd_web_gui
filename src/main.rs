@@ -94,12 +94,12 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             logout::handle(session_id)?
         },
 
-        // Pecaube:
+        // Pecube:
         (GET) ["/pecube"] => {
             pecube::about_get(session_id)?
         },
 
-        // FT Grain Correction:
+        // 3D He (FT Grain Correction):
         (GET) ["/grain"] => {
             grain::about_get(session_id)?
         },
@@ -121,6 +121,14 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
 
         (GET) ["/grain/user_data/{username}/{samplename}/{imagename}", username: String, samplename: String, imagename: String] => {
             grain::sample_image_get(session_id, username, samplename, imagename)?
+        },
+        (GET) ["/js/jsfeat-min.js"] => {
+            let file = File::open("js/jsfeat-min.js")?;
+            Response::from_file("text/javascript", file)
+        },
+        (GET) ["/js/grain_outline.js"] => {
+            let file = File::open("js/grain_outline.js")?;
+            Response::from_file("text/javascript", file)
         },
 
 
