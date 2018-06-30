@@ -9,6 +9,10 @@ window.addEventListener("load", function(){
       for (var image of images) {
           console.log("width: " + image.width + ", height: " + image.height);
       }
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      context.drawImage(img, 0, 0);
+
     }
 
 });

@@ -24,12 +24,12 @@
 
   {{#if sample_images}}
     <form action="/grain/store_outlines" method="post" class="vspace2">
-      <div id="div_element">
-        {{#each sample_images as |image|}}
-          <img name="grain_images" src="/grain/user_data/{{image}}">
-        {{/each}}
-      </div>
-      <button type="submit">Store outlines</button>
+        <div class="grain_images">
+            {{#each sample_images as |image|}}
+              <p><img name="grain_images" src="/grain/user_data/{{image}}"></p>
+            {{/each}}
+            <button type="submit">Store outlines</button>
+        </div>
     </form>
   {{/if}}
 
