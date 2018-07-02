@@ -156,6 +156,14 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             let file = File::open("images/grain20_photo.jpg")?;
             Response::from_file("image/jpeg", file)
         },
+        (GET) ["/images/plus.png"] => {
+            let file = File::open("images/plus.png")?;
+            Response::from_file("image/png", file)
+        },
+        (GET) ["/images/minus.png"] => {
+            let file = File::open("images/minus.png")?;
+            Response::from_file("image/png", file)
+        },
         (GET) ["/css/login.css"] => {
             let file = File::open("css/login.css")?;
             Response::from_file("text/css", file)

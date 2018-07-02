@@ -7,31 +7,53 @@
     <li class="menu_item"><a href="">Item3</a></li>
   </ul>
 
-  {{#if grain_samples}}
-    <form action="/grain/outline_images" method="post" class="vspace2">
-      Select sample:
-      <select name="sample">
-      {{#each grain_samples as |sample|}}
-        <option value="{{sample}}">{{sample}}</option>
-      {{/each}}
-    </select>
-    <button type="submit">edit images</button>
-    </form>
-  {{else}}
-    <h2>You have to upload some images first</h2>
-  {{/if}}
+  <div class="center_content">
+    {{#if grain_samples}}
+      <form action="/grain/outline_images" method="post" class="vspace2">
+        Select sample:
+        <select name="sample">
+        {{#each grain_samples as |sample|}}
+          <option value="{{sample}}">{{sample}}</option>
+        {{/each}}
+      </select>
+      <button type="submit">edit images</button>
+      </form>
+    {{else}}
+      <h2>You have to upload some images first</h2>
+    {{/if}}
 
 
-  {{#if sample_images}}
-    <form action="/grain/store_outlines" method="post" class="vspace2">
-        <div class="grain_images">
-            {{#each sample_images as |image|}}
-              <p><img name="grain_images" src="/grain/user_data/{{image}}"></p>
-            {{/each}}
-            <button type="submit">Store outlines</button>
-        </div>
-    </form>
-  {{/if}}
+    {{#if sample_images}}
+      <form action="/grain/store_outlines" method="post" class="vspace2">
+        <table class="grain_image_outline">
+          {{#each sample_images as |image|}}
+            <tr>
+              <td colspan="3">{{image}}</td>
+            </tr>
+            <tr>
+              <td rowspan="2"><img name="grain_image" src="/grain/user_data/{{image}}"></img></td>
+              <td rowspan="2"><canvas name="grain_canvas" width="1" height="1"></canvas></td>
+              <td>bw threshold:
+                <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
+                <img class="button_center" src="/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
+              </td>
+            </tr>
+            <tr>
+              <td>corner threshold:
+                <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
+                <img class="button_center" src="/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
+              </td>
+            </tr>
+            <tr class="end_row">
+            </tr>
+          {{/each}}
+          <tr>
+            <td colspan="3"><button type="submit">Store outlines</button></td>
+          </tr>
+        </table>
+      </form>
+    {{/if}}
+  </div>
 
   <script src="/js/jsfeat-min.js"></script>
   <script src="/js/grain_outline.js"></script>

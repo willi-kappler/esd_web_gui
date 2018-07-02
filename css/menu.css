@@ -1,4 +1,4 @@
-.header_table {
+.center_content {
   text-align: center;
 }
 
@@ -107,6 +107,21 @@
   font-size: 20px;
 }
 
-.grain_images {
+.grain_image_outline {
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+.grain_image_outline td {
+  border: 1px solid black;
+  padding: 10px;
   text-align: center;
+}
+
+.end_row {
+  border-bottom: 5px solid black;
+}
+
+.button_center {
+  vertical-align: middle;
 }
