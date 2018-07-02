@@ -25,34 +25,63 @@ window.addEventListener("load", function(){
         canvases[i].width = images[i].width;
         canvases[i].height = images[i].height;
 
-        redraw_bw_image(i);
+        redraw_image(i);
       }
       console.log("image processing finished");
     }
 });
 
-function redraw_bw_image(image_index) {
+function redraw_image(image_index) {
   if (images) {
     if (image_index >= 0 && image_index < num_of_images) {
       var context = canvases[image_index].getContext('2d');
       context.drawImage(images[image_index], 0, 0);
       var pixel_data = context.getImageData(0, 0, images[image_index].width, images[image_index].height);
-      var orig_value;
 
-      for (var j = 0; j < pixel_data.data.length; j += 4) {
-        orig_value = (pixel_data.data[j] + pixel_data.data[j + 1] + pixel_data.data[j + 2]) / (255.0 * 3.0);
+      bw_image(pixel_data, image_index);
 
-        if (orig_value < bw_threshold[image_index]) {
-            pixel_data.data[j] = 0;
-            pixel_data.data[j + 1] = 0;
-            pixel_data.data[j + 2] = 0;
-        } else {
-          pixel_data.data[j] = 255;
-          pixel_data.data[j + 1] = 255;
-          pixel_data.data[j + 2] = 255;
-        }
-      }
       context.putImageData(pixel_data, 0, 0);
+    }
+  }
+}
+
+function blur_image(pixel_data, width, height) {
+  var pixel_value;
+
+  for (y = 1; y < height - 1; y++) {
+    for (x = 1; x < width - 1; x++) {
+      pixel_value = pixel_data.data[((y - 1) * (width * 4)) + ((x - 1) * 4)];
+      pixel_value += pixel_data.data[((y - 1) * (width * 4)) + (x * 4)];
+      pixel_value += pixel_data.data[((y - 1) * (width * 4)) + ((x + 1) * 4)];
+
+      pixel_value += pixel_data.data[(y * (width * 4)) + ((x - 1) * 4)];
+      pixel_value += pixel_data.data[(y * (width * 4)) + (x * 4)];
+      pixel_value += pixel_data.data[(y * (width * 4)) + ((x + 1) * 4)];
+
+      pixel_value = pixel_data.data[((y + 1) * (width * 4)) + ((x - 1) * 4)];
+      pixel_value += pixel_data.data[((y + 1) * (width * 4)) + (x * 4)];
+      pixel_value += pixel_data.data[((y + 1) * (width * 4)) + ((x + 1) * 4)];
+
+      // TODO: store pixel value to destination array
+    }
+  }
+}
+
+function bw_image(pixel_data, image_index) {
+  var orig_value;
+
+  for (var j = 0; j < pixel_data.data.length; j += 4) {
+    orig_value = (pixel_data.data[j] + pixel_data.data[j + 1] + pixel_data.data[j + 2]) / (255.0 * 3.0);
+
+    if (orig_value < bw_threshold[image_index]) {
+        pixel_data.data[j] = 0;
+        pixel_data.data[j + 1] = 0;
+        pixel_data.data[j + 2] = 0;
+    } else {
+      pixel_data.data[j] = 255;
+      pixel_data.data[j + 1] = 255;
+      pixel_data.data[j + 2] = 255;
+      pixel_data.data[j + 3] = 0;
     }
   }
 }
@@ -65,7 +94,7 @@ function inc_bw_threshold(image_index) {
         bw_threshold[image_index] = 1.0
       }
 
-      redraw_bw_image(image_index);
+      redraw_image(image_index);
     }
   }
 }
@@ -78,7 +107,7 @@ function dec_bw_threshold(image_index) {
         bw_threshold[image_index] = 0.0
       }
 
-      redraw_bw_image(image_index);
+      redraw_image(image_index);
     }
   }
 }
