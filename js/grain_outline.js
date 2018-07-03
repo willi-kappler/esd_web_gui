@@ -3,6 +3,7 @@ var images;
 var canvases;
 var num_of_images;
 var bw_threshold;
+var corner_points;
 
 window.addEventListener("load", function(){
     console.log("loaded");
@@ -21,6 +22,13 @@ window.addEventListener("load", function(){
         }
       }
 
+      if (!corner_points) {
+        corner_points = [];
+        for (var i = 0; i < num_of_images; i++) {
+          corner_points.push(0.0);
+        }
+      }
+
       for (var i = 0; i < num_of_images; i++) {
         canvases[i].width = images[i].width;
         canvases[i].height = images[i].height;
@@ -31,7 +39,7 @@ window.addEventListener("load", function(){
     }
 });
 
-function blur_image1(pixel_data) {
+function gauss_blur(pixel_data) {
   filter_image(pixel_data, [
     0.0, 0.0, 0.0, 0.0046816479400749065, 0.0, 0.0, 0.0,
     0.0, 0.0046816479400749065, 0.016853932584269662, 0.0299625468164794, 0.016853932584269662, 0.0046816479400749065, 0.0,
@@ -59,15 +67,17 @@ function redraw_image(image_index) {
         context.drawImage(images[image_index], 0, 0);
         var pixel_data = context.getImageData(0, 0, images[image_index].width, images[image_index].height);
 
-        blur_image1(pixel_data);
+        gauss_blur(pixel_data);
         bw_image(pixel_data, image_index);
         laplace_image(pixel_data);
-        fill_inside_image(pixel_data);
+        corner_points[image_index] = fill_inside_image(pixel_data);
 
         context.putImageData(pixel_data, 0, 0);
       }
     }
   }
+
+  console.log("corner_points: " + corner_points[image_index].length);
 }
 
 function fill_inside_image(pixel_data) {
@@ -75,6 +85,7 @@ function fill_inside_image(pixel_data) {
   var height = pixel_data.height;
   var x1, x2, value;
   var mode, offset;
+  var result = [];
 
   for (var y = 10; y < height - 10; y++) {
     mode = 0;
@@ -96,12 +107,25 @@ function fill_inside_image(pixel_data) {
     if (x2 > x1) {
       for (x = x1; x < x2; x++) {
         offset = (y * width + x) * 4;
-        pixel_data.data[offset] = 255;
-        pixel_data.data[offset + 1] = 255;
-        pixel_data.data[offset + 2] = 255;
+        pixel_data.data[offset] = 100;
+        pixel_data.data[offset + 1] = 100;
+        pixel_data.data[offset + 2] = 100;
       }
+
+      pixel_data.data[(y * width + x1) * 4] = 255;
+      pixel_data.data[(y * width + x1) * 4 + 1] = 0;
+      pixel_data.data[(y * width + x1) * 4 + 2] = 0;
+
+      pixel_data.data[(y * width + x2) * 4] = 255;
+      pixel_data.data[(y * width + x2) * 4 + 1] = 0;
+      pixel_data.data[(y * width + x2) * 4 + 2] = 0;
+
+      result.push({x: x1, y: y});
+      result.push({x: x2, y: y});
     }
   }
+
+  return result;
 }
 
 function filter_image(pixel_data, weights) {
@@ -150,7 +174,6 @@ function filter_image(pixel_data, weights) {
 
   for (var i = 0; i < pixel_data.data.length; i++) {
     pixel_data.data[i] = dst[i];
-    // pixel_data.data[i] = 128;
   }
 }
 
@@ -174,7 +197,7 @@ function bw_image(pixel_data, image_index) {
   }
 }
 
-function sumDistance(imageData,x,y,n){
+function sumDistance(imageData, x, y, n) {
   var pixels = imageData.data;
   var imageSizeX = imageData.width;
   var imageSizeY = imageData.height;
