@@ -31,15 +31,9 @@
               <td colspan="3">{{image}}</td>
             </tr>
             <tr>
-              <td rowspan="2"><img name="grain_image" src="/grain/user_data/{{image}}"></img></td>
-              <td rowspan="2"><canvas name="grain_canvas" width="1" height="1"></canvas></td>
+              <td><img name="grain_image" src="/grain/user_data/{{image}}"></img></td>
+              <td><canvas name="grain_canvas" width="1" height="1"></canvas></td>
               <td>bw threshold:
-                <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
-                <img class="button_center" src="/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
-              </td>
-            </tr>
-            <tr>
-              <td>corner threshold:
                 <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
                 <img class="button_center" src="/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
               </td>
