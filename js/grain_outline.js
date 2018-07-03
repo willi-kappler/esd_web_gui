@@ -76,8 +76,6 @@ function redraw_image(image_index) {
       }
     }
   }
-
-  console.log("corner_points: " + corner_points[image_index].length);
 }
 
 function fill_inside_image(pixel_data) {
@@ -195,72 +193,6 @@ function bw_image(pixel_data, image_index) {
       pixel_data.data[i + 3] = 0;
     }
   }
-}
-
-function sumDistance(imageData, x, y, n) {
-  var pixels = imageData.data;
-  var imageSizeX = imageData.width;
-  var imageSizeY = imageData.height;
-
-  // position information
-  var px, py, i, j, pos;
-
-  // distance accumulator
-  var dSum = 0;
-
-  // colors
-  var r1 = pixels[ 4 *(imageSizeX * y + x) + 0];
-  var r2;
-
-  for(i =- n; i <= n; i += 1) {
-      for(j =- n; j <= n; j += 1){
-
-          // Tile the image if we are at an end
-          px = (x + i) % imageSizeX;
-          px = (px > 0) ? px : -px;
-          py = (y + j) % imageSizeY;
-          py = (py > 0) ? py : -py;
-
-          // Get the colors of this pixel
-          pos = 4 * (imageSizeX * py + px);
-          r2 = pixels[pos+0];
-
-          // Work with the pixel
-          dSum += abs(r1 - r2);
-      }
-  }
-
-  return dSum;
-}
-
-function computeDistanceData(pixel_data, n){
-  var pixels = pixel_data.data;
-  var imageSizeX = pixel_data.width;
-  var imageSizeY = pixel_data.height;
-
-  var x, y;
-  var data = [];
-  for(x = 0; x < imageSizeX; x += 1) {
-      for(y = 0; y < imageSizeY; y +=1) {
-          data.push( {
-              x: x,
-              y: y,
-              d: sumDistance(pixel_data, x, y, n)
-          } );
-      }
-  }
-
-  return data;
-}
-
-function byDecreasingD(a, b){
-  return b.d - a.d;
-}
-
-function findCorners(pixel_data, apertureSize, numPoints){
-  // Compute and return the results
-  var results = computeDistanceData(pixel_data, apertureSize);
-  return results.sort(byDecreasingD).slice(0, numPoints);
 }
 
 function inc_bw_threshold(image_index) {
