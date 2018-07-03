@@ -241,15 +241,17 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
             })?;
 
             let samplename = replace_characters(&data.sample);
-            let sampleimages = list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
-                |imagename| format!("{}/{}/{}", user_name, samplename, imagename)).collect::<Vec<String>>();
+            let sample_images = list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
+                |(imagename, image_id)| (format!("{}/{}/{}", user_name, samplename, imagename), *image_id) ).collect::<Vec<(String, i32)>>();
 
             let context = json!({
                 "login_id": user_name,
                 "programs": build_program_menu(&allowed_programs),
                 "grain_samples": list_of_grain_samples(user_db_id)?,
-                "sample_images": sampleimages
+                "sample_images": sample_images
             });
+
+            debug!("context: {}", context);
 
             Ok(Response::html(render("grain_outline_images", &context)?))
         } else {

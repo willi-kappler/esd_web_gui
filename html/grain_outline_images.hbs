@@ -27,11 +27,14 @@
       <form action="/grain/store_outlines" method="post" class="vspace2">
         <table class="grain_image_outline">
           {{#each sample_images as |image|}}
+          <input name="coordinates" type="hidden" value="">
+          <input name="axis" type="hidden" value="">
+          <input name="image_ids" type="hidden" value="{{image.[1]}}">
             <tr>
-              <td colspan="3">{{image}}</td>
+              <td colspan="3">{{image.[0]}}</td>
             </tr>
             <tr>
-              <td><img name="grain_image" src="/grain/user_data/{{image}}"></img></td>
+              <td><img name="grain_image" src="/grain/user_data/{{image.[0]}}"></img></td>
               <td><canvas name="grain_canvas" width="1" height="1"></canvas></td>
               <td>bw threshold:
                 <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
@@ -42,14 +45,13 @@
             </tr>
           {{/each}}
           <tr>
-            <td colspan="3"><button type="submit">Store outlines</button></td>
+            <td colspan="3"><button type="submit" onclick="submit_coordinates()">Store outlines</button></td>
           </tr>
         </table>
       </form>
     {{/if}}
   </div>
 
-  <script src="/js/jsfeat-min.js"></script>
   <script src="/js/grain_outline.js"></script>
 
 {{> footer }}

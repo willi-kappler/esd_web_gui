@@ -491,15 +491,15 @@ pub fn user_has_image(user_db_id: i32, samplename: &str, imagename: &str) -> Res
     }
 }
 
-pub fn list_of_selected_grain_images(user_db_id: i32, samplename: &str) -> Result<Vec<String>, failure::Error> {
+pub fn list_of_selected_grain_images(user_db_id: i32, samplename: &str) -> Result<Vec<(String, i32)>, failure::Error> {
     debug!("database.rs, list_of_selected_grain_images()");
     use self::grain_images::dsl::*;
 
     let connection = get_db_connection()?;
-    let results : Vec<String> = grain_images
+    let results : Vec<(String, i32)> = grain_images
         .filter(user_id.eq(user_db_id))
         .filter(sample_name.eq(samplename))
-        .select(path)
+        .select((path, id))
         .get_results(&*connection)?;
 
     Ok(results)

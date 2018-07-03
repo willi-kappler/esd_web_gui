@@ -4,6 +4,8 @@ var canvases;
 var num_of_images;
 var bw_threshold;
 var corner_points;
+var axis;
+var axis_mode;
 
 window.addEventListener("load", function(){
     console.log("loaded");
@@ -29,15 +31,50 @@ window.addEventListener("load", function(){
         }
       }
 
-      for (var i = 0; i < num_of_images; i++) {
+      if (!axis) {
+        axis = [];
+        for (var i = 0; i < num_of_images; i++) {
+          axis.push({x1: 0, y1: 0, x2: 0, y2: 0});
+        }
+      }
+
+      if (!axis_mode) {
+        axis_mode = [];
+        for (var i = 0; i < num_of_images; i++) {
+          axis_mode.push(0);
+        }
+      }
+
+      for (let i = 0; i < num_of_images; i++) {
         canvases[i].width = images[i].width;
         canvases[i].height = images[i].height;
+
+        canvases[i].addEventListener("mouseup", function(evt) { set_axis(evt, i) }, true);
 
         redraw_image(i);
       }
       console.log("image processing finished");
     }
 });
+
+function set_axis(evt, image_index) {
+  /*
+  console.log("offsetX: " + evt.offsetX);
+  console.log("offsetY: " + evt.offsetY);
+  console.log("image_index: " + image_index);
+  console.log("mode: " + axis_mode[image_index]);
+  */
+
+  if (axis_mode[image_index] == 0) {
+    axis[image_index].x1 = evt.offsetX;
+    axis[image_index].y1 = evt.offsetY;
+    axis_mode[image_index] = 1;
+  } else if (axis_mode[image_index] == 1) {
+    axis[image_index].x2 = evt.offsetX;
+    axis[image_index].y2 = evt.offsetY;
+    axis_mode[image_index] = 0;
+  }
+}
 
 function gauss_blur(pixel_data) {
   filter_image(pixel_data, [
@@ -60,7 +97,7 @@ function laplace_image(pixel_data) {
 }
 
 function redraw_image(image_index) {
-  if (images && canvases) {
+  if (images && canvases && axis) {
     if (image_index >= 0 && image_index < num_of_images) {
       var context = canvases[image_index].getContext("2d");
       if (context) {
@@ -71,6 +108,12 @@ function redraw_image(image_index) {
         bw_image(pixel_data, image_index);
         laplace_image(pixel_data);
         corner_points[image_index] = fill_inside_image(pixel_data);
+
+        context.beginPath();
+        context.moveTo(axis[image_index].x1, axis[image_index].y1);
+        context.lineTo(axis[image_index].x2, axis[image_index].y2);
+        context.strokeStyle = "#ffff00";
+        context.stroke();
 
         context.putImageData(pixel_data, 0, 0);
       }
@@ -217,6 +260,16 @@ function dec_bw_threshold(image_index) {
       }
 
       redraw_image(image_index);
+    }
+  }
+}
+
+function submit_coordinates() {
+  var coordinates = document.getElementsByName("coordinates");
+  var axis = document.getElementsByName("axis");
+  if (coordinates) {
+    for (var i = 0; i < num_of_images; i++) {
+      coordinates[i].value = JSON.stringify(corner_points[i]);
     }
   }
 }
