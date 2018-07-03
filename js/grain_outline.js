@@ -72,6 +72,11 @@ function set_axis(evt, image_index) {
   } else if (axis_mode[image_index] == 1) {
     axis[image_index].x2 = evt.offsetX;
     axis[image_index].y2 = evt.offsetY;
+    axis_mode[image_index] = 2;
+  }
+
+  if (axis_mode[image_index] == 2) {
+    redraw_image(image_index);
     axis_mode[image_index] = 0;
   }
 }
@@ -100,23 +105,21 @@ function redraw_image(image_index) {
   if (images && canvases && axis) {
     if (image_index >= 0 && image_index < num_of_images) {
       var context = canvases[image_index].getContext("2d");
-      if (context) {
-        context.drawImage(images[image_index], 0, 0);
-        var pixel_data = context.getImageData(0, 0, images[image_index].width, images[image_index].height);
+      context.drawImage(images[image_index], 0, 0);
+      var pixel_data = context.getImageData(0, 0, images[image_index].width, images[image_index].height);
 
-        gauss_blur(pixel_data);
-        bw_image(pixel_data, image_index);
-        laplace_image(pixel_data);
-        corner_points[image_index] = fill_inside_image(pixel_data);
+      gauss_blur(pixel_data);
+      bw_image(pixel_data, image_index);
+      laplace_image(pixel_data);
+      corner_points[image_index] = fill_inside_image(pixel_data);
 
-        context.beginPath();
-        context.moveTo(axis[image_index].x1, axis[image_index].y1);
-        context.lineTo(axis[image_index].x2, axis[image_index].y2);
-        context.strokeStyle = "#ffff00";
-        context.stroke();
+      context.putImageData(pixel_data, 0, 0);
 
-        context.putImageData(pixel_data, 0, 0);
-      }
+      context.beginPath();
+      context.moveTo(axis[image_index].x1, axis[image_index].y1);
+      context.lineTo(axis[image_index].x2, axis[image_index].y2);
+      context.strokeStyle = "#ffff00";
+      context.stroke();
     }
   }
 }
