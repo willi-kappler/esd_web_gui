@@ -32,18 +32,6 @@ window.addEventListener("load", function(){
 });
 
 function blur_image1(pixel_data) {
-  /*
-  filter_image(pixel_data, [
-    0, 0, 0, 5, 0, 0, 0,
-    0, 5, 18, 32, 18, 5, 0,
-    0, 18, 64, 100, 64, 18, 0,
-    5, 32, 100, 100, 100, 32, 5,
-    0, 18, 64, 100, 64, 18, 0,
-    0, 5, 18, 32, 18, 5, 0,
-    0, 0, 0, 5, 0, 0, 0
-  ]);
-*/
-
   filter_image(pixel_data, [
     0.0, 0.0, 0.0, 0.0046816479400749065, 0.0, 0.0, 0.0,
     0.0, 0.0046816479400749065, 0.016853932584269662, 0.0299625468164794, 0.016853932584269662, 0.0046816479400749065, 0.0,
@@ -53,7 +41,6 @@ function blur_image1(pixel_data) {
     0.0, 0.0046816479400749065, 0.016853932584269662, 0.0299625468164794, 0.016853932584269662, 0.0046816479400749065, 0.0,
     0.0, 0.0, 0.0, 0.0046816479400749065, 0.0, 0.0, 0.0
   ]);
-
 }
 
 function laplace_image(pixel_data) {
@@ -75,8 +62,43 @@ function redraw_image(image_index) {
         blur_image1(pixel_data);
         bw_image(pixel_data, image_index);
         laplace_image(pixel_data);
+        fill_inside_image(pixel_data);
 
         context.putImageData(pixel_data, 0, 0);
+      }
+    }
+  }
+}
+
+function fill_inside_image(pixel_data) {
+  var width = pixel_data.width;
+  var height = pixel_data.height;
+  var x1, x2, value;
+  var mode, offset;
+
+  for (var y = 10; y < height - 10; y++) {
+    mode = 0;
+    x1 = 0;
+    x2 = 0;
+
+    for (var x = 10; x < width - 10; x++) {
+      value = pixel_data.data[(y * width + x) * 4];
+      if (value == 255) {
+        if (mode == 0) {
+          x1 = x;
+          mode = 1;
+        } else if (mode == 1) {
+          x2 = x;
+        }
+      }
+    }
+
+    if (x2 > x1) {
+      for (x = x1; x < x2; x++) {
+        offset = (y * width + x) * 4;
+        pixel_data.data[offset] = 255;
+        pixel_data.data[offset + 1] = 255;
+        pixel_data.data[offset + 2] = 255;
       }
     }
   }
@@ -150,6 +172,72 @@ function bw_image(pixel_data, image_index) {
       pixel_data.data[i + 3] = 0;
     }
   }
+}
+
+function sumDistance(imageData,x,y,n){
+  var pixels = imageData.data;
+  var imageSizeX = imageData.width;
+  var imageSizeY = imageData.height;
+
+  // position information
+  var px, py, i, j, pos;
+
+  // distance accumulator
+  var dSum = 0;
+
+  // colors
+  var r1 = pixels[ 4 *(imageSizeX * y + x) + 0];
+  var r2;
+
+  for(i =- n; i <= n; i += 1) {
+      for(j =- n; j <= n; j += 1){
+
+          // Tile the image if we are at an end
+          px = (x + i) % imageSizeX;
+          px = (px > 0) ? px : -px;
+          py = (y + j) % imageSizeY;
+          py = (py > 0) ? py : -py;
+
+          // Get the colors of this pixel
+          pos = 4 * (imageSizeX * py + px);
+          r2 = pixels[pos+0];
+
+          // Work with the pixel
+          dSum += abs(r1 - r2);
+      }
+  }
+
+  return dSum;
+}
+
+function computeDistanceData(pixel_data, n){
+  var pixels = pixel_data.data;
+  var imageSizeX = pixel_data.width;
+  var imageSizeY = pixel_data.height;
+
+  var x, y;
+  var data = [];
+  for(x = 0; x < imageSizeX; x += 1) {
+      for(y = 0; y < imageSizeY; y +=1) {
+          data.push( {
+              x: x,
+              y: y,
+              d: sumDistance(pixel_data, x, y, n)
+          } );
+      }
+  }
+
+  return data;
+}
+
+function byDecreasingD(a, b){
+  return b.d - a.d;
+}
+
+function findCorners(pixel_data, apertureSize, numPoints){
+  // Compute and return the results
+  var results = computeDistanceData(pixel_data, apertureSize);
+  return results.sort(byDecreasingD).slice(0, numPoints);
 }
 
 function inc_bw_threshold(image_index) {
