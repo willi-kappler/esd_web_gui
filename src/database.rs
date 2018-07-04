@@ -2,49 +2,15 @@ use std::sync::{Mutex, MutexGuard};
 use std::process;
 use std::convert::From;
 
-use diesel::{self, SqliteConnection, Connection, QueryDsl, ExpressionMethods, RunQueryDsl};
 use argon2;
 use failure;
+use rusqlite;
 
 use configuration;
 use error::{WebGuiError};
 use program_types::{ProgramType};
 use grain::{GrainImage};
 
-table! {
-    user_info {
-        id -> Integer,
-        login_id -> Text,
-        session_id -> Text,
-        logged_in -> Bool,
-        full_name -> Text,
-        email -> Text,
-        passwd -> Text,
-        is_active -> Bool,
-        allowed_programs -> Text,
-    }
-}
-
-table! {
-    grain_images {
-        id -> Integer,
-        user_id -> Integer,
-        path -> Text,
-        sample_name -> Text,
-        size -> Double,
-        mode -> Integer,
-        mineral -> Integer,
-        ratio_232_238 -> Double,
-        ratio_147_238 -> Double,
-        orientation -> Integer,
-        shape -> Integer,
-        pyramids -> Integer,
-        broken_tips -> Bool,
-        zoned -> Bool,
-        rim_width -> Double,
-        ratio_rim_core -> Double,
-    }
-}
 
 /*
     Database created with the following command:
@@ -76,8 +42,14 @@ table! {
         broken_tips INTEGER,
         zoned INTEGER,
         rim_width REAL,
-        ratio_rim_core REAL
+        ratio_rim_core REAL,
+        coordinates TEXT,
+        axis TEXT,
     );
+
+    Update grain_images:
+    alter table grain_images add column coordinates TEXT;
+    alter table grain_images add column axis TEXT;
 
 
     Test user added with the following command:
@@ -85,12 +57,12 @@ table! {
 */
 
 lazy_static! {
-    static ref DB_CONNECTION: Mutex<SqliteConnection> = {
-        Mutex::new(SqliteConnection::establish(":memory:").unwrap())
+    static ref DB_CONNECTION: Mutex<rusqlite::Connection> = {
+        Mutex::new(rusqlite::Connection::open_in_memory().unwrap())
     };
 }
 
-fn get_db_connection<'a>() -> Result<MutexGuard<'a, SqliteConnection>, failure::Error> {
+fn get_db_connection<'a>() -> Result<MutexGuard<'a, rusqlite::Connection>, failure::Error> {
     DB_CONNECTION.lock().map_err(|_| WebGuiError::DatabaseMutexLockError.into())
 }
 
@@ -109,93 +81,25 @@ pub fn connect_to_db() {
 
 fn connect_to_db_helper() -> Result<(), failure::Error> {
     debug!("database.rs, connect_to_db_helper()");
-    let new_connection = SqliteConnection::establish(&configuration::db_name()?)?;
+    let new_connection = rusqlite::Connection::open(&configuration::db_name()?)?;
     let mut connection = get_db_connection()?;
     *connection = new_connection;
     Ok(())
-
-    // SqliteConnection::establish(&database_url)
-
-    // https://docs.rs/diesel/1.2.2/diesel/query_dsl/trait.QueryDsl.html
-    // https://docs.rs/diesel/1.2.2/diesel/query_dsl/trait.RunQueryDsl.html
-    // https://docs.rs/diesel/1.2.2/diesel/fn.insert_into.html
-    // https://docs.rs/diesel/1.2.2/diesel/fn.update.html
-    // https://docs.rs/diesel/1.2.2/diesel/sql_types/index.html
-    //
-
-    /*
-
-
-    fn main() {
-        use self::schema::posts::dsl::*;
-
-        let connection = establish_connection();
-        let results = posts
-            .filter(published.eq(true))
-            .limit(5)
-            .load::<Post>(&connection)
-            .expect("Error loading posts");
-
-        println!("Displaying {} posts", results.len());
-        for post in results {
-            println!("{}", post.title);
-            println!("----------\n");
-            println!("{}", post.body);
-        }
-    }
-
-
-    use schema::posts;
-
-        let new_post = NewPost {
-            title: title,
-            body: body,
-        };
-
-        diesel::insert_into(posts::table)
-            .values(&new_post)
-            .execute(conn)
-    .expect("Error saving new post")
-
-
-
-    let num_deleted = diesel::delete(posts.filter(title.like(pattern)))
-        .execute(&connection)
-        .expect("Error deleting posts");
-
-
-    let _ = diesel::update(posts.find(id))
-            .set(published.eq(true))
-            .execute(&connection)
-            .expect(&format!("Unable to find post {}", id));
-
-
-    let post: models::Post = posts
-            .find(id)
-            .first(&connection)
-            .expect(&format!("Unable to find post {}", id));
-
-
-    let seans_id = users.filter(name.eq("Sean")).select(id)
-        .first(&connection);
-    assert_eq!(Ok(1), seans_id);
-
-
-
-    */
-
 }
 
 fn get_hash_from_db(form_login_id: &str) -> Result<Option<String>, failure::Error> {
     debug!("database.rs, get_hash_from_db()");
-    use self::user_info::dsl::*;
 
     let connection = get_db_connection()?;
-    let results : Vec<String> = user_info
-        .filter(login_id.eq(form_login_id))
-        .filter(is_active.eq(true))
-        .select(passwd)
-        .get_results(&*connection)?;
+    let stmt = connection.prepare("SELECT passwd FROM user_info WHERE login_id = ? AND is_active = true;")?;
+    let mut rows = stmt.query(&[&form_login_id])?;
+    let mut results : Vec<String> = Vec::new();
+
+    while let Some(result_row) = rows.next() {
+        let row = (result_row)?;
+        results.push(row.get_checked(0)?);
+    }
+
     let num_of_results = results.len();
 
     match num_of_results {
@@ -211,7 +115,7 @@ fn get_hash_from_db(form_login_id: &str) -> Result<Option<String>, failure::Erro
         }
     }
 }
-
+/*
 pub fn logged_in(client_session_id: &str) -> Result<bool, failure::Error> {
     debug!("database.rs, logged_in()");
     use self::user_info::dsl::*;
@@ -504,3 +408,22 @@ pub fn list_of_selected_grain_images(user_db_id: i32, samplename: &str) -> Resul
 
     Ok(results)
 }
+
+pub fn save_outline_for_image(user_db_id: i32, image_id: i32, image_coordinates: &str, image_axis: &str) -> Result<(), failure::Error> {
+    debug!("database.rs, save_outline_for_image()");
+    use self::grain_images::dsl::*;
+
+    let connection = get_db_connection()?;
+    let rows_affected : usize = diesel::update(grain_images
+        .filter(user_id.eq(user_db_id))
+        .filter(id.eq(image_id)))
+        .set((coordinates.eq(image_coordinates), axis.eq(image_axis)))
+        .execute(&*connection)?;
+
+    match rows_affected {
+        0 => Err(WebGuiError::GrainImageNotFoundForUser.into()),
+        1 => Ok(()),
+        _ => Err(WebGuiError::TooManyGrainImages.into())
+    }
+}
+*/

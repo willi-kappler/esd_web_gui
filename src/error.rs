@@ -28,4 +28,6 @@ pub enum WebGuiError {
     ProgramNotAllowedForUser,
     #[fail(display = "User in not logged in")]
     UserNotLoggedIn,
+    #[fail(display = "Too many images found for user id and sample id")]
+    TooManyGrainImages,
 }

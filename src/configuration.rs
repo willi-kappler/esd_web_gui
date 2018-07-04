@@ -12,9 +12,8 @@ lazy_static! {
     static ref CONFIGURATION : Mutex<Configuration> = {
         Mutex::new(Configuration {
             log_filename: "webgui.log".to_string(),
-            db_name: "not_set".to_string(),
-            db_user: "not_set".to_string(),
-            db_password: "not_set".to_string(),
+            user_db: "not_set".to_string(),
+            grain_db: "not_set".to_string(),
         })
     };
 }
@@ -22,9 +21,8 @@ lazy_static! {
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 struct Configuration {
     log_filename: String,
-    db_name: String,
-    db_user: String,
-    db_password: String,
+    user_db: String,
+    grain_db: String,
 }
 
 pub fn load_configuration() {
@@ -78,11 +76,23 @@ pub fn log_filename() -> String {
     }
 }
 
-pub fn db_name() -> Result<String, failure::Error> {
-    debug!("configuration.rs, db_name()");
+pub fn user_db() -> Result<String, failure::Error> {
+    debug!("configuration.rs, user_db()");
     match CONFIGURATION.lock() {
         Ok(configuration) => {
-            Ok(configuration.db_name.clone())
+            Ok(configuration.user_db.clone())
+        }
+        Err(_) => {
+            Err(WebGuiError::ConfigurationMutexLockError.into())
+        }
+    }
+}
+
+pub fn grain_db() -> Result<String, failure::Error> {
+    debug!("configuration.rs, grain_db()");
+    match CONFIGURATION.lock() {
+        Ok(configuration) => {
+            Ok(configuration.grain_db.clone())
         }
         Err(_) => {
             Err(WebGuiError::ConfigurationMutexLockError.into())

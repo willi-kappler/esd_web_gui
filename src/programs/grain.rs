@@ -3,13 +3,11 @@ use std::io::{BufWriter, Write};
 
 use rouille::{Response, Request, input};
 use failure;
-use serde::{Serializer};
 use image::{self, GenericImage};
 
 use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
 use program_types::{ProgramType};
-use database::{login_id, logged_in, list_of_allowed_programs, list_of_grain_images, add_grain_image,
-    delete_grain_images, list_of_grain_samples, user_has_image, list_of_selected_grain_images};
+use database::{self, login_id, logged_in, list_of_allowed_programs, list_of_grain_samples};
 use error::{WebGuiError};
 
 #[derive(Queryable, PartialEq, Debug, Serialize)]
@@ -85,9 +83,9 @@ pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
             let context = json!({
                 "login_id": user_name,
                 "programs": build_program_menu(&allowed_programs),
-                "grain_images": list_of_grain_images(user_db_id)?
+                "grain_images": database::list_of_grain_images(user_db_id)?
             });
-            debug!("context: {}", context);
+            // debug!("context: {}", context);
             Ok(Response::html(render("grain_load_images", &context)?))
         } else {
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
@@ -151,9 +149,9 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 
             img_out.save(image_path_out)?;
 
-            debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
+            // debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
 
-            add_grain_image(user_db_id, GrainImage {
+            database::add_grain_image(user_db_id, GrainImage {
                 id: 0, // Will be created automatically in database
                 user_id: user_db_id,
                 path: image_output,
@@ -192,9 +190,9 @@ pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Respons
                 remove: Vec<i32>
             })?;
 
-            debug!("remove: {:?}", data.remove);
+            // debug!("remove: {:?}", data.remove);
 
-            delete_grain_images(user_db_id, data.remove)?;
+            database::delete_grain_images(user_db_id, data.remove)?;
 
             Ok(Response::redirect_303("/grain/load_images"))
         } else {
@@ -218,7 +216,7 @@ pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> 
                 "grain_samples": list_of_grain_samples(user_db_id)?
             });
 
-            debug!("context: {}", context);
+            // debug!("context: {}", context);
 
             Ok(Response::html(render("grain_outline_images", &context)?))
         } else {
@@ -241,7 +239,7 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
             })?;
 
             let samplename = replace_characters(&data.sample);
-            let sample_images = list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
+            let sample_images = database::list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
                 |(imagename, image_id)| (format!("{}/{}/{}", user_name, samplename, imagename), *image_id) ).collect::<Vec<(String, i32)>>();
 
             let context = json!({
@@ -251,7 +249,7 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
                 "sample_images": sample_images
             });
 
-            debug!("context: {}", context);
+            // debug!("context: {}", context);
 
             Ok(Response::html(render("grain_outline_images", &context)?))
         } else {
@@ -272,9 +270,9 @@ pub fn sample_image_get(session_id: &str, username: String, samplename: String, 
             let samplename = replace_characters(&samplename);
             let imagename = replace_characters(&imagename);
 
-            if username == user_name && user_has_image(user_db_id, &samplename, &imagename)? {
+            if username == user_name && database::user_has_image(user_db_id, &samplename, &imagename)? {
                 let filename = format!("user_data/{}/{}/{}", username, samplename, imagename);
-                debug!("image filename: {}", filename);
+                // debug!("image filename: {}", filename);
                 let file = File::open(filename)?;
                 Ok(Response::from_file("image/jpeg", file))
             } else {
@@ -301,7 +299,12 @@ pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Respons
                 image_ids: Vec<i32>,
             })?;
 
-            debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);
+            // TODO: Save coordinates and axis in database
+            for i in 0..(data.coordinates.len()) {
+                database::save_outline_for_image(user_db_id, data.image_ids[i], &data.coordinates[i], &data.axis[i])?;
+            }
+
+            // debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);
 
             let context = json!({
                 "login_id": user_name,
@@ -310,7 +313,7 @@ pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Respons
                 "message": "Outlines and axis saved!"
             });
 
-            debug!("context: {}", context);
+            // debug!("context: {}", context);
 
             Ok(Response::html(render("grain_outline_images", &context)?))
         } else {

@@ -1,4 +1,3 @@
 log_filename = "webgui1.log"
-db_name = "webgui.db"
-db_user = "webgui"
-db_password = "1234567890"
+user_db = "database/users.toml"
+grain_db = "database/grain.toml"

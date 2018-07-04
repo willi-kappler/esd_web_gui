@@ -3,9 +3,20 @@ use handlebars::{Handlebars};
 use failure;
 use rouille::{Response};
 
-
 use program_types::{ProgramType};
-use database::{list_of_allowed_programs, login_id, logged_in};
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+struct User {
+    id: u64,
+    is_active: bool,
+    login_id: String,
+    session_id: String,
+    logged_in: bool,
+    full_name: String,
+    email: String,
+    passwd: String,
+    allowed_programs: Vec<ProgramType>,
+}
 
 lazy_static! {
     static ref TEMPLATE : Handlebars = {
@@ -22,6 +33,10 @@ lazy_static! {
         hb.register_template_file("coupled", "html/coupled.hbs").unwrap();
         hb
     };
+
+    static ref USER_DB : Mutex<Vec<User>> = {
+        Mutex::new(Vec::new())
+    }
 }
 
 pub fn render<T: Serialize>(name: &str, context: &T) -> Result<String, failure::Error> {
@@ -54,6 +69,23 @@ pub fn get_menu_name<'a>(program: &ProgramType) -> &'a str {
         CoupledLandscapeThermalSimulator => "CoupledLandscape",
     }
 }
+
+pub fn load_db(filename: &str) {
+
+}
+
+pub fn logged_in(session_id: &str) {
+
+}
+
+pub fn login_id(session_id: &str) {
+
+}
+
+pub fn list_of_allowed_programs(db_id: u64) {
+
+}
+
 
 pub fn build_program_menu(allowed_programs: &Vec<ProgramType>) -> Vec<(&str, &str)> {
     allowed_programs.iter().map(|p| (get_template_name(p), get_menu_name(p))).collect::<Vec<_>>()

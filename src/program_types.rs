@@ -3,7 +3,7 @@ use failure;
 
 use error::{WebGuiError};
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Deserialize)]
 pub enum ProgramType {
     PecubeESD,
     Grain3DHe,

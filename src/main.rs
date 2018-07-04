@@ -4,7 +4,6 @@
 #[macro_use] extern crate serde_json;
 #[macro_use] extern crate failure;
 #[macro_use] extern crate log;
-#[macro_use] extern crate diesel;
 
 extern crate handlebars;
 extern crate serde;
@@ -20,7 +19,6 @@ mod logout;
 mod programs;
 
 // Helper / utils:
-mod database;
 mod configuration;
 mod error;
 mod util;
@@ -55,9 +53,10 @@ fn main() {
 
     let _log_handle = log4rs::init_config(config).unwrap();
 
-    database::connect_to_db();
-    // Enable in final release, disable for debugging
-    database::log_out_everyone().unwrap();
+    util::load_db(configuration::user_db().unwrap());
+    grain::load_db(configuration::grain_db().unwrap());
+    util::log_out_everyone().unwrap();
+
 
     let addr = "0.0.0.0:3030";
     println!("Now listening on {}", addr);
