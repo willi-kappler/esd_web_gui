@@ -118,6 +118,9 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
         (POST) ["/grain/outline_images"] => {
             grain::outline_images_post(session_id, request)?
         },
+        (POST) ["/grain/store_outlines"] => {
+            grain::store_outline_post(session_id, request)?
+        },
 
         (GET) ["/grain/user_data/{username}/{samplename}/{imagename}", username: String, samplename: String, imagename: String] => {
             grain::sample_image_get(session_id, username, samplename, imagename)?

@@ -4,7 +4,7 @@ var canvases;
 var num_of_images;
 var bw_threshold;
 var corner_points;
-var axis;
+var axis_points;
 var axis_mode;
 
 window.addEventListener("load", function(){
@@ -31,10 +31,10 @@ window.addEventListener("load", function(){
         }
       }
 
-      if (!axis) {
-        axis = [];
+      if (!axis_points) {
+        axis_points = [];
         for (var i = 0; i < num_of_images; i++) {
-          axis.push({x1: 0, y1: 0, x2: 0, y2: 0});
+          axis_points.push({x1: 0, y1: 0, x2: 0, y2: 0});
         }
       }
 
@@ -66,12 +66,12 @@ function set_axis(evt, image_index) {
   */
 
   if (axis_mode[image_index] == 0) {
-    axis[image_index].x1 = evt.offsetX;
-    axis[image_index].y1 = evt.offsetY;
+    axis_points[image_index].x1 = evt.offsetX;
+    axis_points[image_index].y1 = evt.offsetY;
     axis_mode[image_index] = 1;
   } else if (axis_mode[image_index] == 1) {
-    axis[image_index].x2 = evt.offsetX;
-    axis[image_index].y2 = evt.offsetY;
+    axis_points[image_index].x2 = evt.offsetX;
+    axis_points[image_index].y2 = evt.offsetY;
     axis_mode[image_index] = 2;
   }
 
@@ -102,7 +102,7 @@ function laplace_image(pixel_data) {
 }
 
 function redraw_image(image_index) {
-  if (images && canvases && axis) {
+  if (images && canvases && axis_points) {
     if (image_index >= 0 && image_index < num_of_images) {
       var context = canvases[image_index].getContext("2d");
       context.drawImage(images[image_index], 0, 0);
@@ -116,8 +116,8 @@ function redraw_image(image_index) {
       context.putImageData(pixel_data, 0, 0);
 
       context.beginPath();
-      context.moveTo(axis[image_index].x1, axis[image_index].y1);
-      context.lineTo(axis[image_index].x2, axis[image_index].y2);
+      context.moveTo(axis_points[image_index].x1, axis_points[image_index].y1);
+      context.lineTo(axis_points[image_index].x2, axis_points[image_index].y2);
       context.strokeStyle = "#ffff00";
       context.stroke();
     }
@@ -273,6 +273,12 @@ function submit_coordinates() {
   if (coordinates) {
     for (var i = 0; i < num_of_images; i++) {
       coordinates[i].value = JSON.stringify(corner_points[i]);
+    }
+  }
+
+  if (axis) {
+    for (var i = 0; i < num_of_images; i++) {
+      axis[i].value = JSON.stringify(axis_points[i]);
     }
   }
 }

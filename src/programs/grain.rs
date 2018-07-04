@@ -287,3 +287,36 @@ pub fn sample_image_get(session_id: &str, username: String, samplename: String, 
         Err(WebGuiError::UserNotLoggedIn.into())
     }
 }
+
+pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
+    debug!("grain.rs, store_outline_post()");
+    if logged_in(session_id)? {
+        let (user_name, user_db_id) = login_id(session_id)?;
+        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+
+        if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            let data = post_input!(request, {
+                coordinates: Vec<String>,
+                axis: Vec<String>,
+                image_ids: Vec<i32>,
+            })?;
+
+            debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);
+
+            let context = json!({
+                "login_id": user_name,
+                "programs": build_program_menu(&allowed_programs),
+                "grain_samples": list_of_grain_samples(user_db_id)?,
+                "message": "Outlines and axis saved!"
+            });
+
+            debug!("context: {}", context);
+
+            Ok(Response::html(render("grain_outline_images", &context)?))
+        } else {
+            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+        }
+    } else {
+        Ok(Response::redirect_303("/"))
+    }
+}
