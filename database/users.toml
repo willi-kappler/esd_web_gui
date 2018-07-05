@@ -1,0 +1,21 @@
+[[]]
+allowed_programs = ["PecubeESD", "Grain3DHe"]
+email = "test@user.com"
+full_name = "Test User"
+id = 1
+is_active = true
+logged_in = false
+login_id = "test_user"
+passwd = "$argon2i$v=19$m=4096,t=3,p=1$cm9oYmF1Y2hhYzlUdW8wY2k2UmF1bmd1aGFpZzVzb2hjb29Ob2hjaXdlcmVlczRiYWtlZXRoM0NvaGJpZUxhaA$KAta8FGbVMSv/OsA/PGL0FXrNfjJ4Gv6SUkaiZKYbHA"
+session_id = ""
+
+[[]]
+allowed_programs = ["PecubeESD", "Grain3DHe", "LandLabESD"]
+email = "test@user.com"
+full_name = "Test User"
+id = 1
+is_active = false
+logged_in = false
+login_id = "test_user2"
+passwd = "$argon2i$v=19$m=4096,t=3,p=1$cm9oYmF1Y2hhYzlUdW8wY2k2UmF1bmd1aGFpZzVzb2hjb29Ob2hjaXdlcmVlczRiYWtlZXRoM0NvaGJpZUxhaA$KAta8FGbVMSv/OsA/PGL0FXrNfjJ4Gv6SUkaiZKYbHA"
+session_id = ""
