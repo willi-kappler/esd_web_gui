@@ -11,6 +11,7 @@ use toml;
 
 use program_types::{ProgramType};
 use error::{WebGuiError};
+use configuration;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct User {
@@ -50,12 +51,12 @@ fn get_db_lock<'a>() -> Result<MutexGuard<'a, Vec<User>>, failure::Error> {
     USER_DB.lock().map_err(|_| WebGuiError::UserDBMutexLockError.into())
 }
 
-pub fn load_db(filename: &str) -> Result<(), failure::Error> {
+pub fn load_db() -> Result<(), failure::Error> {
     debug!("utils.rs, load_db()");
     let mut user_db = get_db_lock()?;
 
     let mut data = String::new();
-    let f = File::open(filename)?;
+    let f = File::open(configuration::user_db()?)?;
     let mut f = BufReader::new(f);
     f.read_to_string(&mut data)?;
 

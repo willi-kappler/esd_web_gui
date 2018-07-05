@@ -11,6 +11,7 @@ extern crate argon2;
 extern crate log4rs;
 extern crate toml;
 extern crate image;
+extern crate itertools;
 
 // Request handler:
 mod menu;
@@ -53,8 +54,8 @@ fn main() {
 
     let _log_handle = log4rs::init_config(config).unwrap();
 
-    util::load_db(&configuration::user_db().unwrap()).unwrap();
-    grain::load_db(&configuration::grain_db().unwrap()).unwrap();
+    util::load_db().unwrap();
+    grain::load_db().unwrap();
 
 
     let addr = "0.0.0.0:3030";

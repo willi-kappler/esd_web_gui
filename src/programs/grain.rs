@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, BufReader, Write, Read};
 
@@ -6,8 +6,10 @@ use rouille::{Response, Request, input};
 use failure;
 use image::{self, GenericImage};
 use toml;
+use itertools::Itertools;
 
 use util;
+use configuration;
 use program_types::{ProgramType};
 use error::{WebGuiError};
 
@@ -47,50 +49,89 @@ lazy_static! {
     };
 }
 
-pub fn load_db(filename: &str) -> Result<(), failure::Error> {
-    debug!("utils.rs, load_db()");
-    match GRAIN_DB.lock() {
-        Ok(mut grain_db) => {
-            let mut data = String::new();
-            let f = File::open(filename)?;
-            let mut f = BufReader::new(f);
-            f.read_to_string(&mut data)?;
+fn get_db_lock<'a>() -> Result<MutexGuard<'a, Vec<GrainImage>>, failure::Error> {
+    GRAIN_DB.lock().map_err(|_| WebGuiError::GrainDBMutexLockError.into())
+}
 
-            *grain_db = toml::from_str(&data)?;
-            Ok(())
-        }
-        Err(_) => {
-            Err(WebGuiError::GrainDBMutexLockError.into())
-        }
-    }
+pub fn load_db() -> Result<(), failure::Error> {
+    debug!("utils.rs, load_db()");
+    let mut grain_db = get_db_lock()?;
+
+    let mut data = String::new();
+    let f = File::open(configuration::grain_db()?)?;
+    let mut f = BufReader::new(f);
+    f.read_to_string(&mut data)?;
+
+    *grain_db = toml::from_str(&data)?;
+    Ok(())
+}
+
+fn save_db() -> Result<(), failure::Error> {
+    debug!("utils.rs, load_db()");
+    let grain_db = get_db_lock()?;
+
+    let serialized = toml::Value::try_from(&*grain_db)?.to_string();
+    let f = File::create(configuration::grain_db()?)?;
+    let mut f = BufWriter::new(f);
+    f.write_all(serialized.as_bytes())?;
+
+    Ok(())
 }
 
 fn list_of_grain_images(user_id: u16) -> Result<Vec<GrainImage>, failure::Error> {
     debug!("grain.rs, list_of_grain_images()");
-    match GRAIN_DB.lock() {
-        Ok(grain_db) => {
-            Ok(grain_db.iter().filter(|grain| grain.user_id == user_id).map(|grain| grain.clone()).collect())
-        }
-        Err(_) => {
-            Err(WebGuiError::GrainDBMutexLockError.into())
-        }
-    }
+    let grain_db = get_db_lock()?;
+
+    Ok(grain_db.iter()
+        .filter(|grain| grain.user_id == user_id)
+        .map(|grain| grain.clone()).collect())
 }
 
 fn list_of_grain_samples(user_id: u16) -> Result<Vec<String>, failure::Error> {
     debug!("grain.rs, list_of_grain_samples()");
+    let grain_db = get_db_lock()?;
 
-    Ok(Vec::new())
+    Ok(grain_db.iter()
+        .filter(|grain| grain.user_id == user_id)
+        .map(|grain| grain.sample_name.clone())
+        .unique().collect())
 }
 
-fn add_grain_image(user_id: u16, new_iamge: GrainImage) -> Result<(), failure::Error> {
+fn create_new_id() -> Result<u32, failure::Error> {
+    debug!("grain.rs, create_new_id()");
+    let grain_db = get_db_lock()?;
+
+    let num_of_elements = grain_db.len();
+
+    if num_of_elements == 0 {
+        Ok(0)
+    } else {
+        Ok(grain_db[num_of_elements - 1].id + 1)
+    }
+}
+
+fn add_grain_image(new_image: GrainImage) -> Result<(), failure::Error> {
     debug!("grain.rs, add_grain_images()");
+    let mut grain_db = get_db_lock()?;
+
+    grain_db.push(new_image);
+
+    save_db()?;
 
     Ok(())
 }
 
 fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure::Error> {
     debug!("grain.rs, delete_grain_images()");
+    let mut grain_db = get_db_lock()?;
+
+    for id in image_ids {
+        if let Some(index) = grain_db.iter().position(|grain| grain.user_id == user_id && grain.id == id) {
+            grain_db.remove(index);
+        }
+    }
+
+    save_db()?;
 
     Ok(())
 }
@@ -109,6 +150,8 @@ fn user_has_image(user_id: u16, samplename: &str, imagename: &str) -> Result<boo
 
 fn save_outline_for_image(user_id: u16, image_id: u32, image_coordinates: &str, image_axis: &str) -> Result<(), failure::Error> {
     debug!("grain.rs, save_outline_for_image()");
+
+    save_db()?;
 
     Ok(())
 }
@@ -196,8 +239,8 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 
             // debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
 
-            add_grain_image(user_db_id, GrainImage {
-                id: 0, // Will be created automatically in database
+            add_grain_image(GrainImage {
+                id: create_new_id()?,
                 user_id: user_db_id,
                 path: image_output,
                 sample_name: samplename,
