@@ -2,8 +2,10 @@
 pub enum WebGuiError {
     #[fail(display = "Could not lock CONFIGURATION")]
     ConfigurationMutexLockError,
-    #[fail(display = "Could not lock DB_CONNECTION")]
-    DatabaseMutexLockError,
+    #[fail(display = "Could not lock USER_DB")]
+    UserDBMutexLockError,
+    #[fail(display = "Could not lock GRAIN_DB")]
+    GrainDBMutexLockError,
     #[fail(display = "Invalid number of command line arguments")]
     InvalidCommandLineArguments,
     #[fail(display = "User name not found")]

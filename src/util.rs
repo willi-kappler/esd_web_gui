@@ -1,13 +1,20 @@
+use std::sync::{Mutex, MutexGuard};
+use std::fs::File;
+use std::io::{Read, BufReader};
+
 use serde::{Serialize};
 use handlebars::{Handlebars};
 use failure;
 use rouille::{Response};
+use argon2;
+use toml;
 
 use program_types::{ProgramType};
+use error::{WebGuiError};
 
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct User {
-    id: u64,
+    id: u16,
     is_active: bool,
     login_id: String,
     session_id: String,
@@ -36,6 +43,143 @@ lazy_static! {
 
     static ref USER_DB : Mutex<Vec<User>> = {
         Mutex::new(Vec::new())
+    };
+}
+
+fn get_db_lock<'a>() -> Result<MutexGuard<'a, Vec<User>>, failure::Error> {
+    USER_DB.lock().map_err(|_| WebGuiError::UserDBMutexLockError.into())
+}
+
+pub fn load_db(filename: &str) -> Result<(), failure::Error> {
+    debug!("utils.rs, load_db()");
+    let mut user_db = get_db_lock()?;
+
+    let mut data = String::new();
+    let f = File::open(filename)?;
+    let mut f = BufReader::new(f);
+    f.read_to_string(&mut data)?;
+
+    *user_db = toml::from_str(&data)?;
+    Ok(())
+}
+
+fn get_hash_from_db(login_id: &str) -> Result<Option<String>, failure::Error> {
+    debug!("utils.rs, get_hash_from_db()");
+    let user_db = get_db_lock()?;
+
+    let passwd_hash = user_db.iter()
+        .filter(|user| user.login_id == login_id)
+        .map(|user| user.passwd.clone()).collect::<Vec<_>>();
+
+    match passwd_hash.len() {
+        0 => Ok(None),
+        1 => Ok(Some(passwd_hash[0].clone())),
+        _ => Err(WebGuiError::MultipleUsers.into()),
+    }
+}
+
+pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Error> {
+    debug!("utils.rs, check_login()");
+    match get_hash_from_db(login_id)? {
+        Some(hash) => {
+            argon2::verify_encoded(&hash, password.as_bytes()).map_err(From::from)
+        }
+        None => {
+            Ok(false)
+        }
+    }
+}
+
+pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
+    debug!("utils.rs, login()");
+    let mut user_db = get_db_lock()?;
+
+    let mut users_found = 0;
+    let mut index = 0;
+
+    for i in 0..user_db.len() {
+        if user_db[i].session_id == session_id && user_db[i].login_id == login_id {
+            users_found += 1;
+            index = i;
+        }
+    }
+
+    match users_found {
+        0 => Err(WebGuiError::UserNotFound.into()),
+        1 => {
+            user_db[index].logged_in = true;
+            Ok(())
+        }
+        _ => Err(WebGuiError::MultipleUsers.into()),
+    }
+}
+
+pub fn logout(session_id: &str) -> Result<(), failure::Error> {
+    debug!("utils.rs, logout()");
+    let mut user_db = get_db_lock()?;
+
+    let mut users_found = 0;
+    let mut index = 0;
+
+    for i in 0..user_db.len() {
+        if user_db[i].session_id == session_id {
+            users_found += 1;
+            index = i;
+        }
+    }
+
+    match users_found {
+        0 => Err(WebGuiError::UserNotFound.into()),
+        1 => {
+            user_db[index].logged_in = false;
+            Ok(())
+        }
+        _ => Err(WebGuiError::MultipleUsers.into()),
+    }
+}
+
+pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
+    debug!("utils.rs, logged_in()");
+    let user_db = get_db_lock()?;
+
+    let users_logged_in = user_db.iter()
+        .filter(|user| user.session_id == session_id)
+        .map(|user| user.logged_in).collect::<Vec<_>>();
+
+    match users_logged_in.len() {
+        0 => Err(WebGuiError::UserNotFound.into()),
+        1 => Ok(users_logged_in[0]),
+        _ => Err(WebGuiError::MultipleUsers.into()),
+    }
+}
+
+pub fn login_id(session_id: &str) -> Result<(String, u16), failure::Error> {
+    debug!("utils.rs, login_id()");
+    let user_db = get_db_lock()?;
+
+    let user_ids = user_db.iter()
+        .filter(|user| user.session_id == session_id)
+        .map(|user| (user.login_id.clone(), user.id)).collect::<Vec<_>>();
+
+    match user_ids.len() {
+        0 => Err(WebGuiError::UserNotFound.into()),
+        1 => Ok(user_ids[0].clone()),
+        _ => Err(WebGuiError::MultipleUsers.into()),
+    }
+}
+
+pub fn list_of_allowed_programs(user_id: u16) -> Result<Vec<ProgramType>, failure::Error> {
+    debug!("utils.rs, login_id()");
+    let user_db = get_db_lock()?;
+
+    let allowed_programs = user_db.iter()
+        .filter(|user| user.id == user_id)
+        .map(|user| user.allowed_programs.clone()).collect::<Vec<_>>();
+
+    match allowed_programs.len() {
+        0 => Err(WebGuiError::UserNotFound.into()),
+        1 => Ok(allowed_programs[0].clone()),
+        _ => Err(WebGuiError::MultipleUsers.into()),
     }
 }
 
@@ -69,23 +213,6 @@ pub fn get_menu_name<'a>(program: &ProgramType) -> &'a str {
         CoupledLandscapeThermalSimulator => "CoupledLandscape",
     }
 }
-
-pub fn load_db(filename: &str) {
-
-}
-
-pub fn logged_in(session_id: &str) {
-
-}
-
-pub fn login_id(session_id: &str) {
-
-}
-
-pub fn list_of_allowed_programs(db_id: u64) {
-
-}
-
 
 pub fn build_program_menu(allowed_programs: &Vec<ProgramType>) -> Vec<(&str, &str)> {
     allowed_programs.iter().map(|p| (get_template_name(p), get_menu_name(p))).collect::<Vec<_>>()

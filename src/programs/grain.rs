@@ -1,94 +1,139 @@
+use std::sync::Mutex;
 use std::fs::{create_dir_all, File};
-use std::io::{BufWriter, Write};
+use std::io::{BufWriter, BufReader, Write, Read};
 
 use rouille::{Response, Request, input};
 use failure;
 use image::{self, GenericImage};
+use toml;
 
-use util::{render, show_program, build_program_menu, get_template_name, replace_characters};
+use util;
 use program_types::{ProgramType};
-use database::{self, login_id, logged_in, list_of_allowed_programs, list_of_grain_samples};
 use error::{WebGuiError};
 
-#[derive(Queryable, PartialEq, Debug, Serialize)]
-pub struct GrainImage {
-    pub id: i32,
-    pub user_id: i32,
-    pub path: String,
-    pub sample_name: String,
-    pub size: f64,
-    #[serde(serialize_with = "grain_mode")]
-    pub mode: i32,
-    #[serde(serialize_with = "grain_mineral")]
-    pub mineral: i32,
-    pub ratio_232_238: f64,
-    pub ratio_147_238: f64,
-    #[serde(serialize_with = "grain_orientation")]
-    pub orientation: i32,
-    #[serde(serialize_with = "grain_shape")]
-    pub shape: i32,
-    pub pyramids: i32,
-    pub broken_tips: bool,
-    pub zoned: bool,
-    pub rim_width: f64,
-    pub ratio_rim_core: f64,
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct Axis {
+    x1: u32,
+    y1: u32,
+    x2: u32,
+    y2: u32,
 }
 
-fn grain_mode<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
-    match mode {
-        0 => serializer.serialize_str("normal"),
-        _ => serializer.serialize_str("cut")
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct GrainImage {
+    id: u32,
+    user_id: u16,
+    path: String,
+    sample_name: String,
+    size: f64,
+    mode: i32,
+    mineral: i32,
+    ratio_232_238: f64,
+    ratio_147_238: f64,
+    orientation: i32,
+    shape: i32,
+    pyramids: i32,
+    broken_tips: bool,
+    zoned: bool,
+    rim_width: f64,
+    ratio_rim_core: f64,
+    coordinates: Vec<(u32, u32)>,
+    axis: Axis,
+}
+
+lazy_static! {
+    static ref GRAIN_DB : Mutex<Vec<GrainImage>> = {
+        Mutex::new(Vec::new())
+    };
+}
+
+pub fn load_db(filename: &str) -> Result<(), failure::Error> {
+    debug!("utils.rs, load_db()");
+    match GRAIN_DB.lock() {
+        Ok(mut grain_db) => {
+            let mut data = String::new();
+            let f = File::open(filename)?;
+            let mut f = BufReader::new(f);
+            f.read_to_string(&mut data)?;
+
+            *grain_db = toml::from_str(&data)?;
+            Ok(())
+        }
+        Err(_) => {
+            Err(WebGuiError::GrainDBMutexLockError.into())
+        }
     }
 }
 
-fn grain_mineral<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
-    match mode {
-        0 => serializer.serialize_str("ap"),
-        _ => serializer.serialize_str("zr")
+fn list_of_grain_images(user_id: u16) -> Result<Vec<GrainImage>, failure::Error> {
+    debug!("grain.rs, list_of_grain_images()");
+    match GRAIN_DB.lock() {
+        Ok(grain_db) => {
+            Ok(grain_db.iter().filter(|grain| grain.user_id == user_id).map(|grain| grain.clone()).collect())
+        }
+        Err(_) => {
+            Err(WebGuiError::GrainDBMutexLockError.into())
+        }
     }
 }
 
-fn grain_orientation<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
-    match mode {
-        0 => serializer.serialize_str("parallel"),
-        _ => serializer.serialize_str("perpendicular")
-    }
+fn list_of_grain_samples(user_id: u16) -> Result<Vec<String>, failure::Error> {
+    debug!("grain.rs, list_of_grain_samples()");
+
+    Ok(Vec::new())
 }
 
-fn grain_shape<S>(mode: &i32, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
-    match mode {
-        0 => serializer.serialize_str("hexagonal"),
-        1 => serializer.serialize_str("ellipsoid"),
-        2 => serializer.serialize_str("cylinder"),
-        _ => serializer.serialize_str("block")
-    }
+fn add_grain_image(user_id: u16, new_iamge: GrainImage) -> Result<(), failure::Error> {
+    debug!("grain.rs, add_grain_images()");
+
+    Ok(())
+}
+
+fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure::Error> {
+    debug!("grain.rs, delete_grain_images()");
+
+    Ok(())
+}
+
+fn list_of_selected_grain_images(user_id: u16, samplename: &str) -> Result<Vec<(String, u32)>, failure::Error> {
+    debug!("grain.rs, list_of_selected_grain_images()");
+
+    Ok(Vec::new())
+}
+
+fn user_has_image(user_id: u16, samplename: &str, imagename: &str) -> Result<bool, failure::Error> {
+    debug!("grain.rs, user_has_image()");
+
+    Ok(false)
+}
+
+fn save_outline_for_image(user_id: u16, image_id: u32, image_coordinates: &str, image_axis: &str) -> Result<(), failure::Error> {
+    debug!("grain.rs, save_outline_for_image()");
+
+    Ok(())
 }
 
 pub fn about_get(session_id: &str) -> Result<Response, failure::Error> {
     debug!("grain.rs, about_get()");
-    show_program(session_id, &ProgramType::Grain3DHe)
+    util::show_program(session_id, &ProgramType::Grain3DHe)
 }
 
 pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
     debug!("grain.rs, load_image_get()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let context = json!({
                 "login_id": user_name,
-                "programs": build_program_menu(&allowed_programs),
-                "grain_images": database::list_of_grain_images(user_db_id)?
+                "programs": util::build_program_menu(&allowed_programs),
+                "grain_images": list_of_grain_images(user_db_id)?
             });
             // debug!("context: {}", context);
-            Ok(Response::html(render("grain_load_images", &context)?))
+            Ok(Response::html(util::render("grain_load_images", &context)?))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))
@@ -97,9 +142,9 @@ pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
 
 pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, load_image_post()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let data = post_input!(request, {
@@ -120,14 +165,14 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
             })?;
 
             let image_input = data.image.filename.ok_or(WebGuiError::NoFilenameForGrainImage)?;
-            let image_input = replace_characters(&image_input);
+            let image_input = util::replace_characters(&image_input);
 
             let image_output = match image_input.rfind('.') {
                 None => format!("{}.jpg", image_input),
                 Some(n) => format!("{}.jpg", image_input[..n].to_string()),
             };
 
-            let samplename = replace_characters(&data.sample_name);
+            let samplename = util::replace_characters(&data.sample_name);
 
             let user_path = format!("user_data/{}/{}", user_name, samplename);
 
@@ -151,7 +196,7 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 
             // debug!("mime: {}, in: {}, out: {}, filelength: {}", data.image.mime, image_input, image_output, data.image.data.len());
 
-            database::add_grain_image(user_db_id, GrainImage {
+            add_grain_image(user_db_id, GrainImage {
                 id: 0, // Will be created automatically in database
                 user_id: user_db_id,
                 path: image_output,
@@ -168,11 +213,13 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 zoned: data.zoned != 0,
                 rim_width: data.rim_width,
                 ratio_rim_core: data.ratio_rim_core,
+                coordinates: Vec::new(),
+                axis: Axis{ x1: 0, y1: 0, x2: 0, y2: 0 },
             })?;
 
             Ok(Response::redirect_303("/grain/load_images"))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))
@@ -181,22 +228,22 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
 
 pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, remove_image_post()");
-    if logged_in(session_id)? {
-        let (_user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (_user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let data = post_input!(request, {
-                remove: Vec<i32>
+                remove: Vec<u32>
             })?;
 
             // debug!("remove: {:?}", data.remove);
 
-            database::delete_grain_images(user_db_id, data.remove)?;
+            delete_grain_images(user_db_id, data.remove)?;
 
             Ok(Response::redirect_303("/grain/load_images"))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))
@@ -205,22 +252,22 @@ pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Respons
 
 pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> {
     debug!("grain.rs, outline_image_get()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let context = json!({
                 "login_id": user_name,
-                "programs": build_program_menu(&allowed_programs),
+                "programs": util::build_program_menu(&allowed_programs),
                 "grain_samples": list_of_grain_samples(user_db_id)?
             });
 
             // debug!("context: {}", context);
 
-            Ok(Response::html(render("grain_outline_images", &context)?))
+            Ok(Response::html(util::render("grain_outline_images", &context)?))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))
@@ -229,31 +276,31 @@ pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> 
 
 pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, outline_image_post()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let data = post_input!(request, {
                 sample: String
             })?;
 
-            let samplename = replace_characters(&data.sample);
-            let sample_images = database::list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
-                |(imagename, image_id)| (format!("{}/{}/{}", user_name, samplename, imagename), *image_id) ).collect::<Vec<(String, i32)>>();
+            let samplename = util::replace_characters(&data.sample);
+            let sample_images = list_of_selected_grain_images(user_db_id, &samplename)?.iter().map(
+                |(imagename, image_id)| (format!("{}/{}/{}", user_name, samplename, imagename), *image_id) ).collect::<Vec<_>>();
 
             let context = json!({
                 "login_id": user_name,
-                "programs": build_program_menu(&allowed_programs),
+                "programs": util::build_program_menu(&allowed_programs),
                 "grain_samples": list_of_grain_samples(user_db_id)?,
                 "sample_images": sample_images
             });
 
             // debug!("context: {}", context);
 
-            Ok(Response::html(render("grain_outline_images", &context)?))
+            Ok(Response::html(util::render("grain_outline_images", &context)?))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))
@@ -262,15 +309,15 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
 
 pub fn sample_image_get(session_id: &str, username: String, samplename: String, imagename: String) -> Result<Response, failure::Error> {
     debug!("grain.rs, sample_image_get()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
-            let samplename = replace_characters(&samplename);
-            let imagename = replace_characters(&imagename);
+            let samplename = util::replace_characters(&samplename);
+            let imagename = util::replace_characters(&imagename);
 
-            if username == user_name && database::user_has_image(user_db_id, &samplename, &imagename)? {
+            if username == user_name && user_has_image(user_db_id, &samplename, &imagename)? {
                 let filename = format!("user_data/{}/{}/{}", username, samplename, imagename);
                 // debug!("image filename: {}", filename);
                 let file = File::open(filename)?;
@@ -288,36 +335,36 @@ pub fn sample_image_get(session_id: &str, username: String, samplename: String, 
 
 pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Response, failure::Error> {
     debug!("grain.rs, store_outline_post()");
-    if logged_in(session_id)? {
-        let (user_name, user_db_id) = login_id(session_id)?;
-        let allowed_programs = list_of_allowed_programs(user_db_id)?;
+    if util::logged_in(session_id)? {
+        let (user_name, user_db_id) = util::login_id(session_id)?;
+        let allowed_programs = util::list_of_allowed_programs(user_db_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
             let data = post_input!(request, {
                 coordinates: Vec<String>,
                 axis: Vec<String>,
-                image_ids: Vec<i32>,
+                image_ids: Vec<u32>,
             })?;
 
             // TODO: Save coordinates and axis in database
             for i in 0..(data.coordinates.len()) {
-                database::save_outline_for_image(user_db_id, data.image_ids[i], &data.coordinates[i], &data.axis[i])?;
+                save_outline_for_image(user_db_id, data.image_ids[i], &data.coordinates[i], &data.axis[i])?;
             }
 
             // debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);
 
             let context = json!({
                 "login_id": user_name,
-                "programs": build_program_menu(&allowed_programs),
+                "programs": util::build_program_menu(&allowed_programs),
                 "grain_samples": list_of_grain_samples(user_db_id)?,
                 "message": "Outlines and axis saved!"
             });
 
             // debug!("context: {}", context);
 
-            Ok(Response::html(render("grain_outline_images", &context)?))
+            Ok(Response::html(util::render("grain_outline_images", &context)?))
         } else {
-            Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
+            Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
         Ok(Response::redirect_303("/"))

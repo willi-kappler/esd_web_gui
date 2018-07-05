@@ -53,9 +53,8 @@ fn main() {
 
     let _log_handle = log4rs::init_config(config).unwrap();
 
-    util::load_db(configuration::user_db().unwrap());
-    grain::load_db(configuration::grain_db().unwrap());
-    util::log_out_everyone().unwrap();
+    util::load_db(&configuration::user_db().unwrap()).unwrap();
+    grain::load_db(&configuration::grain_db().unwrap()).unwrap();
 
 
     let addr = "0.0.0.0:3030";
