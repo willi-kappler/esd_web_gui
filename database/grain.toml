@@ -1,0 +1,1055 @@
+[[grains]]
+broken_tips = false
+file_name = "Test-1-parC.jpg"
+id = 1
+mineral = 0
+mode = 0
+orientation = 0
+pyramids = 0
+ratio_147_238 = 0.0615
+ratio_232_238 = 0.4444
+ratio_rim_core = 1.0
+rim_width = 20.0
+sample_name = "test1"
+shape = 0
+size = 0.3998
+user_id = 1
+zoned = false
+
+[[grains.coordinates]]
+x = 166
+y = 144
+
+[[grains.coordinates]]
+x = 177
+y = 144
+
+[[grains.coordinates]]
+x = 165
+y = 145
+
+[[grains.coordinates]]
+x = 190
+y = 145
+
+[[grains.coordinates]]
+x = 164
+y = 146
+
+[[grains.coordinates]]
+x = 199
+y = 146
+
+[[grains.coordinates]]
+x = 163
+y = 147
+
+[[grains.coordinates]]
+x = 209
+y = 147
+
+[[grains.coordinates]]
+x = 162
+y = 148
+
+[[grains.coordinates]]
+x = 216
+y = 148
+
+[[grains.coordinates]]
+x = 161
+y = 149
+
+[[grains.coordinates]]
+x = 224
+y = 149
+
+[[grains.coordinates]]
+x = 160
+y = 150
+
+[[grains.coordinates]]
+x = 233
+y = 150
+
+[[grains.coordinates]]
+x = 159
+y = 151
+
+[[grains.coordinates]]
+x = 242
+y = 151
+
+[[grains.coordinates]]
+x = 159
+y = 152
+
+[[grains.coordinates]]
+x = 251
+y = 152
+
+[[grains.coordinates]]
+x = 158
+y = 153
+
+[[grains.coordinates]]
+x = 257
+y = 153
+
+[[grains.coordinates]]
+x = 157
+y = 154
+
+[[grains.coordinates]]
+x = 267
+y = 154
+
+[[grains.coordinates]]
+x = 157
+y = 155
+
+[[grains.coordinates]]
+x = 278
+y = 155
+
+[[grains.coordinates]]
+x = 157
+y = 156
+
+[[grains.coordinates]]
+x = 283
+y = 156
+
+[[grains.coordinates]]
+x = 156
+y = 157
+
+[[grains.coordinates]]
+x = 285
+y = 157
+
+[[grains.coordinates]]
+x = 156
+y = 158
+
+[[grains.coordinates]]
+x = 286
+y = 158
+
+[[grains.coordinates]]
+x = 156
+y = 159
+
+[[grains.coordinates]]
+x = 287
+y = 159
+
+[[grains.coordinates]]
+x = 156
+y = 160
+
+[[grains.coordinates]]
+x = 287
+y = 160
+
+[[grains.coordinates]]
+x = 155
+y = 161
+
+[[grains.coordinates]]
+x = 288
+y = 161
+
+[[grains.coordinates]]
+x = 155
+y = 162
+
+[[grains.coordinates]]
+x = 288
+y = 162
+
+[[grains.coordinates]]
+x = 155
+y = 163
+
+[[grains.coordinates]]
+x = 289
+y = 163
+
+[[grains.coordinates]]
+x = 155
+y = 164
+
+[[grains.coordinates]]
+x = 290
+y = 164
+
+[[grains.coordinates]]
+x = 155
+y = 165
+
+[[grains.coordinates]]
+x = 290
+y = 165
+
+[[grains.coordinates]]
+x = 155
+y = 166
+
+[[grains.coordinates]]
+x = 291
+y = 166
+
+[[grains.coordinates]]
+x = 155
+y = 167
+
+[[grains.coordinates]]
+x = 291
+y = 167
+
+[[grains.coordinates]]
+x = 155
+y = 168
+
+[[grains.coordinates]]
+x = 292
+y = 168
+
+[[grains.coordinates]]
+x = 155
+y = 169
+
+[[grains.coordinates]]
+x = 292
+y = 169
+
+[[grains.coordinates]]
+x = 155
+y = 170
+
+[[grains.coordinates]]
+x = 292
+y = 170
+
+[[grains.coordinates]]
+x = 154
+y = 171
+
+[[grains.coordinates]]
+x = 292
+y = 171
+
+[[grains.coordinates]]
+x = 154
+y = 172
+
+[[grains.coordinates]]
+x = 292
+y = 172
+
+[[grains.coordinates]]
+x = 154
+y = 173
+
+[[grains.coordinates]]
+x = 291
+y = 173
+
+[[grains.coordinates]]
+x = 154
+y = 174
+
+[[grains.coordinates]]
+x = 291
+y = 174
+
+[[grains.coordinates]]
+x = 154
+y = 175
+
+[[grains.coordinates]]
+x = 291
+y = 175
+
+[[grains.coordinates]]
+x = 154
+y = 176
+
+[[grains.coordinates]]
+x = 291
+y = 176
+
+[[grains.coordinates]]
+x = 154
+y = 177
+
+[[grains.coordinates]]
+x = 291
+y = 177
+
+[[grains.coordinates]]
+x = 154
+y = 178
+
+[[grains.coordinates]]
+x = 290
+y = 178
+
+[[grains.coordinates]]
+x = 154
+y = 179
+
+[[grains.coordinates]]
+x = 290
+y = 179
+
+[[grains.coordinates]]
+x = 154
+y = 180
+
+[[grains.coordinates]]
+x = 290
+y = 180
+
+[[grains.coordinates]]
+x = 154
+y = 181
+
+[[grains.coordinates]]
+x = 290
+y = 181
+
+[[grains.coordinates]]
+x = 154
+y = 182
+
+[[grains.coordinates]]
+x = 290
+y = 182
+
+[[grains.coordinates]]
+x = 154
+y = 183
+
+[[grains.coordinates]]
+x = 290
+y = 183
+
+[[grains.coordinates]]
+x = 154
+y = 184
+
+[[grains.coordinates]]
+x = 290
+y = 184
+
+[[grains.coordinates]]
+x = 155
+y = 185
+
+[[grains.coordinates]]
+x = 289
+y = 185
+
+[[grains.coordinates]]
+x = 155
+y = 186
+
+[[grains.coordinates]]
+x = 289
+y = 186
+
+[[grains.coordinates]]
+x = 156
+y = 187
+
+[[grains.coordinates]]
+x = 289
+y = 187
+
+[[grains.coordinates]]
+x = 156
+y = 188
+
+[[grains.coordinates]]
+x = 289
+y = 188
+
+[[grains.coordinates]]
+x = 157
+y = 189
+
+[[grains.coordinates]]
+x = 289
+y = 189
+
+[[grains.coordinates]]
+x = 157
+y = 190
+
+[[grains.coordinates]]
+x = 289
+y = 190
+
+[[grains.coordinates]]
+x = 158
+y = 191
+
+[[grains.coordinates]]
+x = 289
+y = 191
+
+[[grains.coordinates]]
+x = 158
+y = 192
+
+[[grains.coordinates]]
+x = 289
+y = 192
+
+[[grains.coordinates]]
+x = 159
+y = 193
+
+[[grains.coordinates]]
+x = 289
+y = 193
+
+[[grains.coordinates]]
+x = 159
+y = 194
+
+[[grains.coordinates]]
+x = 289
+y = 194
+
+[[grains.coordinates]]
+x = 160
+y = 195
+
+[[grains.coordinates]]
+x = 289
+y = 195
+
+[[grains.coordinates]]
+x = 161
+y = 196
+
+[[grains.coordinates]]
+x = 289
+y = 196
+
+[[grains.coordinates]]
+x = 162
+y = 197
+
+[[grains.coordinates]]
+x = 289
+y = 197
+
+[[grains.coordinates]]
+x = 163
+y = 198
+
+[[grains.coordinates]]
+x = 289
+y = 198
+
+[[grains.coordinates]]
+x = 166
+y = 199
+
+[[grains.coordinates]]
+x = 289
+y = 199
+
+[[grains.coordinates]]
+x = 171
+y = 200
+
+[[grains.coordinates]]
+x = 289
+y = 200
+
+[[grains.coordinates]]
+x = 180
+y = 201
+
+[[grains.coordinates]]
+x = 288
+y = 201
+
+[[grains.coordinates]]
+x = 189
+y = 202
+
+[[grains.coordinates]]
+x = 288
+y = 202
+
+[[grains.coordinates]]
+x = 197
+y = 203
+
+[[grains.coordinates]]
+x = 287
+y = 203
+
+[[grains.coordinates]]
+x = 205
+y = 204
+
+[[grains.coordinates]]
+x = 286
+y = 204
+
+[[grains.coordinates]]
+x = 215
+y = 205
+
+[[grains.coordinates]]
+x = 286
+y = 205
+
+[[grains.coordinates]]
+x = 223
+y = 206
+
+[[grains.coordinates]]
+x = 285
+y = 206
+
+[[grains.coordinates]]
+x = 231
+y = 207
+
+[[grains.coordinates]]
+x = 284
+y = 207
+
+[[grains.coordinates]]
+x = 240
+y = 208
+
+[[grains.coordinates]]
+x = 283
+y = 208
+
+[[grains.coordinates]]
+x = 250
+y = 209
+
+[[grains.coordinates]]
+x = 283
+y = 209
+
+[[grains.coordinates]]
+x = 259
+y = 210
+
+[[grains.coordinates]]
+x = 282
+y = 210
+
+[[grains.coordinates]]
+x = 268
+y = 211
+
+[[grains.coordinates]]
+x = 280
+y = 211
+
+[grains.axis]
+x1 = 169
+x2 = 278
+y1 = 172
+y2 = 184
+
+[[grains]]
+broken_tips = false
+file_name = "Test-1-perC.jpg"
+id = 2
+mineral = 0
+mode = 0
+orientation = 0
+pyramids = 0
+ratio_147_238 = 0.0615
+ratio_232_238 = 0.4444
+ratio_rim_core = 1.0
+rim_width = 20.0
+sample_name = "test1"
+shape = 0
+size = 0.3998
+user_id = 1
+zoned = false
+
+[[grains.coordinates]]
+x = 229
+y = 122
+
+[[grains.coordinates]]
+x = 234
+y = 122
+
+[[grains.coordinates]]
+x = 227
+y = 123
+
+[[grains.coordinates]]
+x = 237
+y = 123
+
+[[grains.coordinates]]
+x = 226
+y = 124
+
+[[grains.coordinates]]
+x = 240
+y = 124
+
+[[grains.coordinates]]
+x = 225
+y = 125
+
+[[grains.coordinates]]
+x = 243
+y = 125
+
+[[grains.coordinates]]
+x = 224
+y = 126
+
+[[grains.coordinates]]
+x = 245
+y = 126
+
+[[grains.coordinates]]
+x = 222
+y = 127
+
+[[grains.coordinates]]
+x = 248
+y = 127
+
+[[grains.coordinates]]
+x = 221
+y = 128
+
+[[grains.coordinates]]
+x = 250
+y = 128
+
+[[grains.coordinates]]
+x = 220
+y = 129
+
+[[grains.coordinates]]
+x = 253
+y = 129
+
+[[grains.coordinates]]
+x = 219
+y = 130
+
+[[grains.coordinates]]
+x = 255
+y = 130
+
+[[grains.coordinates]]
+x = 217
+y = 131
+
+[[grains.coordinates]]
+x = 257
+y = 131
+
+[[grains.coordinates]]
+x = 216
+y = 132
+
+[[grains.coordinates]]
+x = 257
+y = 132
+
+[[grains.coordinates]]
+x = 215
+y = 133
+
+[[grains.coordinates]]
+x = 258
+y = 133
+
+[[grains.coordinates]]
+x = 213
+y = 134
+
+[[grains.coordinates]]
+x = 258
+y = 134
+
+[[grains.coordinates]]
+x = 212
+y = 135
+
+[[grains.coordinates]]
+x = 258
+y = 135
+
+[[grains.coordinates]]
+x = 211
+y = 136
+
+[[grains.coordinates]]
+x = 258
+y = 136
+
+[[grains.coordinates]]
+x = 210
+y = 137
+
+[[grains.coordinates]]
+x = 258
+y = 137
+
+[[grains.coordinates]]
+x = 209
+y = 138
+
+[[grains.coordinates]]
+x = 259
+y = 138
+
+[[grains.coordinates]]
+x = 207
+y = 139
+
+[[grains.coordinates]]
+x = 259
+y = 139
+
+[[grains.coordinates]]
+x = 206
+y = 140
+
+[[grains.coordinates]]
+x = 259
+y = 140
+
+[[grains.coordinates]]
+x = 205
+y = 141
+
+[[grains.coordinates]]
+x = 259
+y = 141
+
+[[grains.coordinates]]
+x = 204
+y = 142
+
+[[grains.coordinates]]
+x = 259
+y = 142
+
+[[grains.coordinates]]
+x = 204
+y = 143
+
+[[grains.coordinates]]
+x = 259
+y = 143
+
+[[grains.coordinates]]
+x = 204
+y = 144
+
+[[grains.coordinates]]
+x = 260
+y = 144
+
+[[grains.coordinates]]
+x = 204
+y = 145
+
+[[grains.coordinates]]
+x = 260
+y = 145
+
+[[grains.coordinates]]
+x = 204
+y = 146
+
+[[grains.coordinates]]
+x = 260
+y = 146
+
+[[grains.coordinates]]
+x = 204
+y = 147
+
+[[grains.coordinates]]
+x = 260
+y = 147
+
+[[grains.coordinates]]
+x = 204
+y = 148
+
+[[grains.coordinates]]
+x = 260
+y = 148
+
+[[grains.coordinates]]
+x = 204
+y = 149
+
+[[grains.coordinates]]
+x = 260
+y = 149
+
+[[grains.coordinates]]
+x = 204
+y = 150
+
+[[grains.coordinates]]
+x = 260
+y = 150
+
+[[grains.coordinates]]
+x = 204
+y = 151
+
+[[grains.coordinates]]
+x = 261
+y = 151
+
+[[grains.coordinates]]
+x = 204
+y = 152
+
+[[grains.coordinates]]
+x = 261
+y = 152
+
+[[grains.coordinates]]
+x = 205
+y = 153
+
+[[grains.coordinates]]
+x = 261
+y = 153
+
+[[grains.coordinates]]
+x = 205
+y = 154
+
+[[grains.coordinates]]
+x = 261
+y = 154
+
+[[grains.coordinates]]
+x = 205
+y = 155
+
+[[grains.coordinates]]
+x = 261
+y = 155
+
+[[grains.coordinates]]
+x = 205
+y = 156
+
+[[grains.coordinates]]
+x = 261
+y = 156
+
+[[grains.coordinates]]
+x = 206
+y = 157
+
+[[grains.coordinates]]
+x = 260
+y = 157
+
+[[grains.coordinates]]
+x = 206
+y = 158
+
+[[grains.coordinates]]
+x = 259
+y = 158
+
+[[grains.coordinates]]
+x = 206
+y = 159
+
+[[grains.coordinates]]
+x = 258
+y = 159
+
+[[grains.coordinates]]
+x = 206
+y = 160
+
+[[grains.coordinates]]
+x = 257
+y = 160
+
+[[grains.coordinates]]
+x = 207
+y = 161
+
+[[grains.coordinates]]
+x = 256
+y = 161
+
+[[grains.coordinates]]
+x = 207
+y = 162
+
+[[grains.coordinates]]
+x = 254
+y = 162
+
+[[grains.coordinates]]
+x = 207
+y = 163
+
+[[grains.coordinates]]
+x = 253
+y = 163
+
+[[grains.coordinates]]
+x = 207
+y = 164
+
+[[grains.coordinates]]
+x = 252
+y = 164
+
+[[grains.coordinates]]
+x = 208
+y = 165
+
+[[grains.coordinates]]
+x = 251
+y = 165
+
+[[grains.coordinates]]
+x = 208
+y = 166
+
+[[grains.coordinates]]
+x = 249
+y = 166
+
+[[grains.coordinates]]
+x = 208
+y = 167
+
+[[grains.coordinates]]
+x = 248
+y = 167
+
+[[grains.coordinates]]
+x = 209
+y = 168
+
+[[grains.coordinates]]
+x = 247
+y = 168
+
+[[grains.coordinates]]
+x = 209
+y = 169
+
+[[grains.coordinates]]
+x = 245
+y = 169
+
+[[grains.coordinates]]
+x = 209
+y = 170
+
+[[grains.coordinates]]
+x = 244
+y = 170
+
+[[grains.coordinates]]
+x = 209
+y = 171
+
+[[grains.coordinates]]
+x = 243
+y = 171
+
+[[grains.coordinates]]
+x = 210
+y = 172
+
+[[grains.coordinates]]
+x = 241
+y = 172
+
+[[grains.coordinates]]
+x = 211
+y = 173
+
+[[grains.coordinates]]
+x = 240
+y = 173
+
+[[grains.coordinates]]
+x = 214
+y = 174
+
+[[grains.coordinates]]
+x = 239
+y = 174
+
+[[grains.coordinates]]
+x = 216
+y = 175
+
+[[grains.coordinates]]
+x = 238
+y = 175
+
+[[grains.coordinates]]
+x = 219
+y = 176
+
+[[grains.coordinates]]
+x = 236
+y = 176
+
+[[grains.coordinates]]
+x = 221
+y = 177
+
+[[grains.coordinates]]
+x = 235
+y = 177
+
+[[grains.coordinates]]
+x = 224
+y = 178
+
+[[grains.coordinates]]
+x = 234
+y = 178
+
+[[grains.coordinates]]
+x = 226
+y = 179
+
+[[grains.coordinates]]
+x = 233
+y = 179
+
+[grains.axis]
+x1 = 0
+x2 = 0
+y1 = 0
+y2 = 0

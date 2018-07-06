@@ -14,6 +14,11 @@ use error::{WebGuiError};
 use configuration;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+struct UserList {
+    users: Vec<User>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct User {
     id: u16,
     is_active: bool,
@@ -60,7 +65,8 @@ pub fn load_db() -> Result<(), failure::Error> {
     let mut f = BufReader::new(f);
     f.read_to_string(&mut data)?;
 
-    *user_db = toml::from_str(&data)?;
+    let user_list: UserList = toml::from_str(&data)?;
+    *user_db = user_list.users;
     Ok(())
 }
 
@@ -99,7 +105,7 @@ pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
     let mut index = 0;
 
     for i in 0..user_db.len() {
-        if user_db[i].session_id == session_id && user_db[i].login_id == login_id {
+        if user_db[i].login_id == login_id {
             users_found += 1;
             index = i;
         }
@@ -109,6 +115,7 @@ pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
         0 => Err(WebGuiError::UserNotFound.into()),
         1 => {
             user_db[index].logged_in = true;
+            user_db[index].session_id = session_id.to_string();
             Ok(())
         }
         _ => Err(WebGuiError::MultipleUsers.into()),
@@ -148,7 +155,7 @@ pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
         .map(|user| user.logged_in).collect::<Vec<_>>();
 
     match users_logged_in.len() {
-        0 => Err(WebGuiError::SessionNotFound.into()),
+        0 => Ok(false),
         1 => Ok(users_logged_in[0]),
         _ => Err(WebGuiError::MultipleSessions.into()),
     }

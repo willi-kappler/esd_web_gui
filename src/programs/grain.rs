@@ -15,6 +15,17 @@ use program_types::{ProgramType};
 use error::{WebGuiError};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct GrainList {
+    grains: Vec<GrainImage>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct Coordinates {
+    x: u32,
+    y: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 struct Axis {
     x1: u32,
     y1: u32,
@@ -40,7 +51,7 @@ struct GrainImage {
     zoned: bool,
     rim_width: f64,
     ratio_rim_core: f64,
-    coordinates: Vec<(u32, u32)>,
+    coordinates: Vec<Coordinates>,
     axis: Axis,
 }
 
@@ -63,15 +74,17 @@ pub fn load_db() -> Result<(), failure::Error> {
     let mut f = BufReader::new(f);
     f.read_to_string(&mut data)?;
 
-    *grain_db = toml::from_str(&data)?;
+    let grain_list: GrainList = toml::from_str(&data)?;
+    *grain_db = grain_list.grains;
     Ok(())
 }
 
 fn save_db() -> Result<(), failure::Error> {
-    debug!("utils.rs, load_db()");
+    debug!("utils.rs, save_db()");
     let grain_db = get_db_lock()?;
+    let grain_list = GrainList{ grains: grain_db.clone() };
 
-    let serialized = toml::Value::try_from(&*grain_db)?.to_string();
+    let serialized = toml::Value::try_from(grain_list)?.to_string();
     let f = File::create(configuration::grain_db()?)?;
     let mut f = BufWriter::new(f);
     f.write_all(serialized.as_bytes())?;
@@ -113,9 +126,10 @@ fn create_new_id() -> Result<u32, failure::Error> {
 
 fn add_grain_image(new_image: GrainImage) -> Result<(), failure::Error> {
     debug!("grain.rs, add_grain_images()");
-    let mut grain_db = get_db_lock()?;
-
-    grain_db.push(new_image);
+    {
+        let mut grain_db = get_db_lock()?;
+        grain_db.push(new_image);
+    }
 
     save_db()?;
 
@@ -124,11 +138,13 @@ fn add_grain_image(new_image: GrainImage) -> Result<(), failure::Error> {
 
 fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure::Error> {
     debug!("grain.rs, delete_grain_images()");
-    let mut grain_db = get_db_lock()?;
+    {
+        let mut grain_db = get_db_lock()?;
 
-    for id in image_ids {
-        if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
-            grain_db.remove(index);
+        for id in image_ids {
+            if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
+                grain_db.remove(index);
+            }
         }
     }
 
@@ -154,13 +170,15 @@ fn user_has_image(user_id: u16, sample_name: &str, file_name: &str) -> Result<bo
     .any(|grain| grain.user_id == user_id && grain.sample_name == sample_name && grain.file_name == file_name))
 }
 
-fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<(u32, u32)>, axis: Axis) -> Result<(), failure::Error> {
+fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<Coordinates>, axis: Axis) -> Result<(), failure::Error> {
     debug!("grain.rs, save_outline_for_image()");
-    let mut grain_db = get_db_lock()?;
+    {
+        let mut grain_db = get_db_lock()?;
 
-    if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
-        grain_db[index].coordinates = coordinates;
-        grain_db[index].axis = axis;
+        if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
+            grain_db[index].coordinates = coordinates;
+            grain_db[index].axis = axis;
+        }
     }
 
     save_db()?;
@@ -403,12 +421,13 @@ pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Respons
 
             // TODO: Save coordinates and axis in database
             for i in 0..(data.coordinates.len()) {
-                let coordinates: Vec<(u32, u32)> = serde_json::from_str(&data.coordinates[i])?;
+                // debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates[i], data.axis[i], data.image_ids[i]);
+                // debug!("JSON coordinates");
+                let coordinates: Vec<Coordinates> = serde_json::from_str(&data.coordinates[i])?;
+                // debug!("JSON axis");
                 let axis: Axis = serde_json::from_str(&data.axis[i])?;
                 save_outline_for_image(user_db_id, data.image_ids[i], coordinates, axis)?;
             }
-
-            // debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);
 
             let context = json!({
                 "login_id": user_name,
