@@ -41,6 +41,7 @@ lazy_static! {
         hb.register_template_file("grain", "html/grain.hbs").unwrap();
         hb.register_template_file("grain_load_images", "html/grain_load_images.hbs").unwrap();
         hb.register_template_file("grain_outline_images", "html/grain_outline_images.hbs").unwrap();
+        hb.register_template_file("grain_calculate", "html/grain_calculate.hbs").unwrap();
         hb.register_template_file("landlab", "html/landlab.hbs").unwrap();
         hb.register_template_file("icecascade", "html/icecascade.hbs").unwrap();
         hb.register_template_file("coupled", "html/coupled.hbs").unwrap();
