@@ -1,6 +1,8 @@
 use std::sync::{Mutex, MutexGuard};
-use std::fs::{create_dir_all, File};
+use std::fs::{create_dir_all, remove_file, File};
 use std::io::{BufWriter, BufReader, Write, Read};
+use std::path::Path;
+use std::collections::HashSet;
 
 use rouille::{Response, Request, input};
 use failure;
@@ -52,7 +54,9 @@ struct GrainImage {
     rim_width: f64,
     ratio_rim_core: f64,
     coordinates: Vec<Coordinates>,
+    coordinate_file_name: String,
     axis: Axis,
+    waiting_for_results: bool,
 }
 
 lazy_static! {
@@ -97,15 +101,6 @@ fn list_of_grain_images(user_id: u16) -> Result<Vec<GrainImage>, failure::Error>
 
     Ok(grain_db.iter()
         .filter(|grain| grain.user_id == user_id)
-        .map(|grain| grain.clone()).collect())
-}
-
-fn list_of_grain_images_with_name(user_id: u16, sample_name: &str) -> Result<Vec<GrainImage>, failure::Error> {
-    debug!("grain.rs, list_of_grain_images()");
-    let grain_db = get_db_lock()?;
-
-    Ok(grain_db.iter()
-        .filter(|grain| grain.user_id == user_id && grain.sample_name == sample_name)
         .map(|grain| grain.clone()).collect())
 }
 
@@ -188,35 +183,74 @@ fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<Coordinates>, 
     Ok(())
 }
 
-fn submit_calculation(path: &str, grains: Vec<GrainImage>) -> Result<(), failure::Error> {
+fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Result<(), failure::Error> {
     debug!("grain.rs, submit_calculation()");
+    let mut grain_db = get_db_lock()?;
+
+    let path = format!("matlab/{}/{}", user_name, sample_name);
+    create_dir_all(&path)?;
+
+    debug!("path: {}", path);
+
+    // Remove old results file
+    let old_result_file_name = format!("{}/result.txt", path);
+    if Path::new(&old_result_file_name).exists() {
+        remove_file(&old_result_file_name)?;
+    }
+
+    debug!("old_result_file_name: {}", old_result_file_name);
 
     let f = File::create(format!("{}/matlab_input.csv", path))?;
     let mut grain_file = BufWriter::new(f);
 
-    for grain in grains {
-        let coordinate_file_name = grain.file_name.replace(".jpg", ".txt");
-        let f = File::create(format!("{}/{}", path, coordinate_file_name))?;
-        let mut coordinates_file = BufWriter::new(f);
+    for grain in grain_db.iter_mut() {
+        if grain.user_id == user_id && grain.sample_name == sample_name {
+            write!(grain_file, "{}, {}, {}, {}, {}, ", grain.coordinate_file_name, grain.sample_name, grain.size, grain.mode, grain.mineral)?;
+            write!(grain_file, "{}, {}, {}, {}, {}, ", grain.ratio_232_238, grain.ratio_147_238, grain.orientation, grain.shape, grain.pyramids)?;
+            write!(grain_file, "{}, {}, {}, {}, ", grain.broken_tips, grain.zoned, grain.rim_width, grain.ratio_rim_core)?;
+            write!(grain_file, "{}, {}, {}, {}\n", grain.axis.x1, grain.axis.y1, grain.axis.x2, grain.axis.y2)?;
 
-        write!(grain_file, "{}, {}, {}, {}, {}, ", coordinate_file_name, grain.sample_name, grain.size, grain.mode, grain.mineral)?;
-        write!(grain_file, "{}, {}, {}, {}, {}, ", grain.ratio_232_238, grain.ratio_147_238, grain.orientation, grain.shape, grain.pyramids)?;
-        write!(grain_file, "{}, {}, {}, {}, ", grain.broken_tips, grain.zoned, grain.rim_width, grain.ratio_rim_core)?;
-        write!(grain_file, "{}, {}, {}, {}\n", grain.axis.x1, grain.axis.y1, grain.axis.x2, grain.axis.y2)?;
+            let f = File::create(format!("{}/{}", path, grain.coordinate_file_name))?;
+            let mut coordinates_file = BufWriter::new(f);
 
-        for coordinate in grain.coordinates {
-            write!(coordinates_file, "{}, {}\n", coordinate.x, coordinate.y)?;
+            debug!("coordinate_file_name: {}", grain.coordinate_file_name);
+
+            for coordinate in grain.coordinates.iter() {
+                write!(coordinates_file, "{}, {}\n", coordinate.x, coordinate.y)?;
+            }
+
+            grain.waiting_for_results = true;
         }
     }
-
-
-
-
 
     Ok(())
 }
 
+fn get_results(user_id: u16, user_name: &str) -> Result<String, failure::Error> {
+    debug!("grain.rs, get_results()");
+    let mut grain_db = get_db_lock()?;
 
+    let mut results = Vec::new();
+    let mut already_processed = HashSet::new();
+
+    for grain in grain_db.iter_mut() {
+        if grain.user_id == user_id && grain.waiting_for_results && !already_processed.contains(&grain.sample_name) {
+            let path = format!("matlab/{}/{}/result.txt", user_name, grain.sample_name);
+            if Path::new(&path).exists() {
+                let mut f = File::open(path)?;
+                let mut contents = String::new();
+                f.read_to_string(&mut contents)?;
+
+                results.push((grain.sample_name.clone(), contents));
+
+                grain.waiting_for_results = false;
+                already_processed.insert(grain.sample_name.clone());
+            }
+        }
+    }
+
+    Ok("".to_string())
+}
 
 
 
@@ -280,6 +314,8 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 Some(n) => format!("{}.jpg", image_input[..n].to_string()),
             };
 
+            let coordinate_file_name = image_output.replace(".jpg", ".txt");
+
             let sample_name = util::replace_characters(&data.sample_name);
 
             let user_path = format!("user_data/{}/{}", user_name, sample_name);
@@ -318,7 +354,9 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 rim_width: data.rim_width,
                 ratio_rim_core: data.ratio_rim_core,
                 coordinates: Vec::new(),
+                coordinate_file_name,
                 axis: Axis{ x1: 0, y1: 0, x2: 0, y2: 0 },
+                waiting_for_results: false,
             })?;
 
             Ok(Response::redirect_303("/grain/load_images"))
@@ -475,7 +513,8 @@ pub fn calculate_get(session_id: &str) -> Result<Response, failure::Error> {
             let context = json!({
                 "login_id": user_name,
                 "programs": util::build_program_menu(&allowed_programs),
-                "grain_samples": list_of_grain_samples(user_id)?
+                "grain_samples": list_of_grain_samples(user_id)?,
+                "results": get_results(user_id, &user_name)?,
             });
 
             Ok(Response::html(util::render("grain_calculate", &context)?))
@@ -499,11 +538,7 @@ pub fn calculate_post(session_id: &str, request: &Request) -> Result<Response, f
             })?;
 
             let sample_name = util::replace_characters(&data.sample);
-            let path = format!("matlab/{}/{}", user_name, sample_name);
-            create_dir_all(&path)?;
-            let list_of_grains = list_of_grain_images_with_name(user_id, &sample_name)?;
-
-            submit_calculation(&path, list_of_grains)?;
+            submit_calculation(user_id, &user_name,  &sample_name)?;
 
             let context = json!({
                 "login_id": user_name,
