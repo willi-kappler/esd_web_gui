@@ -7,6 +7,7 @@ use failure;
 use image::{self, GenericImage};
 use toml;
 use itertools::Itertools;
+use serde_json;
 
 use util;
 use configuration;
@@ -25,7 +26,7 @@ struct Axis {
 struct GrainImage {
     id: u32,
     user_id: u16,
-    path: String,
+    file_name: String,
     sample_name: String,
     size: f64,
     mode: i32,
@@ -126,7 +127,7 @@ fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure:
     let mut grain_db = get_db_lock()?;
 
     for id in image_ids {
-        if let Some(index) = grain_db.iter().position(|grain| grain.user_id == user_id && grain.id == id) {
+        if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
             grain_db.remove(index);
         }
     }
@@ -136,20 +137,31 @@ fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure:
     Ok(())
 }
 
-fn list_of_selected_grain_images(user_id: u16, samplename: &str) -> Result<Vec<(String, u32)>, failure::Error> {
+fn list_of_selected_grain_images(user_id: u16, sample_name: &str) -> Result<Vec<(String, u32)>, failure::Error> {
     debug!("grain.rs, list_of_selected_grain_images()");
+    let grain_db = get_db_lock()?;
 
-    Ok(Vec::new())
+    Ok(grain_db.iter()
+        .filter(|grain| grain.user_id == user_id && grain.sample_name == sample_name)
+        .map(|grain| (grain.file_name.clone(), grain.id)).collect::<Vec<_>>())
 }
 
-fn user_has_image(user_id: u16, samplename: &str, imagename: &str) -> Result<bool, failure::Error> {
+fn user_has_image(user_id: u16, sample_name: &str, file_name: &str) -> Result<bool, failure::Error> {
     debug!("grain.rs, user_has_image()");
+    let grain_db = get_db_lock()?;
 
-    Ok(false)
+    Ok(grain_db.iter()
+    .any(|grain| grain.user_id == user_id && grain.sample_name == sample_name && grain.file_name == file_name))
 }
 
-fn save_outline_for_image(user_id: u16, image_id: u32, image_coordinates: &str, image_axis: &str) -> Result<(), failure::Error> {
+fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<(u32, u32)>, axis: Axis) -> Result<(), failure::Error> {
     debug!("grain.rs, save_outline_for_image()");
+    let mut grain_db = get_db_lock()?;
+
+    if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
+        grain_db[index].coordinates = coordinates;
+        grain_db[index].axis = axis;
+    }
 
     save_db()?;
 
@@ -215,9 +227,9 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 Some(n) => format!("{}.jpg", image_input[..n].to_string()),
             };
 
-            let samplename = util::replace_characters(&data.sample_name);
+            let sample_name = util::replace_characters(&data.sample_name);
 
-            let user_path = format!("user_data/{}/{}", user_name, samplename);
+            let user_path = format!("user_data/{}/{}", user_name, sample_name);
 
             // debug!("user_path: {}", user_path);
 
@@ -242,8 +254,8 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
             add_grain_image(GrainImage {
                 id: create_new_id()?,
                 user_id: user_db_id,
-                path: image_output,
-                sample_name: samplename,
+                file_name: image_output,
+                sample_name: sample_name,
                 size: data.size,
                 mode: data.mode,
                 mineral: data.mineral,
@@ -391,7 +403,9 @@ pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Respons
 
             // TODO: Save coordinates and axis in database
             for i in 0..(data.coordinates.len()) {
-                save_outline_for_image(user_db_id, data.image_ids[i], &data.coordinates[i], &data.axis[i])?;
+                let coordinates: Vec<(u32, u32)> = serde_json::from_str(&data.coordinates[i])?;
+                let axis: Axis = serde_json::from_str(&data.axis[i])?;
+                save_outline_for_image(user_db_id, data.image_ids[i], coordinates, axis)?;
             }
 
             // debug!("post data, coordinates: {:?}, axis: {:?}, image_ids: {:?}", data.coordinates, data.axis, data.image_ids);

@@ -130,12 +130,12 @@ pub fn logout(session_id: &str) -> Result<(), failure::Error> {
     }
 
     match users_found {
-        0 => Err(WebGuiError::UserNotFound.into()),
+        0 => Err(WebGuiError::SessionNotFound.into()),
         1 => {
             user_db[index].logged_in = false;
             Ok(())
         }
-        _ => Err(WebGuiError::MultipleUsers.into()),
+        _ => Err(WebGuiError::MultipleSessions.into()),
     }
 }
 
@@ -148,9 +148,9 @@ pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
         .map(|user| user.logged_in).collect::<Vec<_>>();
 
     match users_logged_in.len() {
-        0 => Err(WebGuiError::UserNotFound.into()),
+        0 => Err(WebGuiError::SessionNotFound.into()),
         1 => Ok(users_logged_in[0]),
-        _ => Err(WebGuiError::MultipleUsers.into()),
+        _ => Err(WebGuiError::MultipleSessions.into()),
     }
 }
 
@@ -178,7 +178,7 @@ pub fn list_of_allowed_programs(user_id: u16) -> Result<Vec<ProgramType>, failur
         .map(|user| user.allowed_programs.clone()).collect::<Vec<_>>();
 
     match allowed_programs.len() {
-        0 => Err(WebGuiError::UserNotFound.into()),
+        0 => Err(WebGuiError::NoProgramsForUser.into()),
         1 => Ok(allowed_programs[0].clone()),
         _ => Err(WebGuiError::MultipleUsers.into()),
     }

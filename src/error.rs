@@ -16,8 +16,6 @@ pub enum WebGuiError {
     MultipleUsers,
     #[fail(display = "Multiple sessions found with same id")]
     MultipleSessions,
-    #[fail(display = "Error while updateing the database")]
-    UpdateDBError,
     #[fail(display = "Unknown program type")]
     UnknownProgramType,
     #[fail(display = "No programs for user defined in database")]
@@ -30,6 +28,4 @@ pub enum WebGuiError {
     ProgramNotAllowedForUser,
     #[fail(display = "User in not logged in")]
     UserNotLoggedIn,
-    #[fail(display = "Too many images found for user id and sample id")]
-    TooManyGrainImages,
 }
