@@ -134,6 +134,10 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
             let file = File::open("js/grain_outline.js")?;
             Response::from_file("text/javascript", file)
         },
+        (GET) ["/js/grain_refresh.js"] => {
+            let file = File::open("js/grain_refresh.js")?;
+            Response::from_file("text/javascript", file)
+        },
 
 
         // Landlab:

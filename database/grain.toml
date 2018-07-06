@@ -16,7 +16,6 @@ size = 0.3998
 user_id = 1
 zoned = false
 coordinate_file_name = "Test-1-parC.txt"
-waiting_for_results = false
 
 [[grains.coordinates]]
 x = 166
@@ -586,7 +585,6 @@ size = 0.3998
 user_id = 1
 zoned = false
 coordinate_file_name = "Test-1-perC.txt"
-waiting_for_results = false
 
 [[grains.coordinates]]
 x = 229

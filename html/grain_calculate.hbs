@@ -25,6 +25,15 @@
     {{#if message}}
       <h2>{{message}}</h2>
     {{/if}}
+
+    {{#if results}}
+      {{#each results as |result|}}
+        <p>{{result.[0]}}</p>
+        <p>{{result.[1]}}</p>
+      {{/each}}
+    {{/if}}
   </div>
+
+  <script src="/js/grain_refresh.js"></script>
 
 {{> footer }}

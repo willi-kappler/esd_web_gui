@@ -56,7 +56,6 @@ struct GrainImage {
     coordinates: Vec<Coordinates>,
     coordinate_file_name: String,
     axis: Axis,
-    waiting_for_results: bool,
 }
 
 lazy_static! {
@@ -190,16 +189,6 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
     let path = format!("matlab/{}/{}", user_name, sample_name);
     create_dir_all(&path)?;
 
-    debug!("path: {}", path);
-
-    // Remove old results file
-    let old_result_file_name = format!("{}/result.txt", path);
-    if Path::new(&old_result_file_name).exists() {
-        remove_file(&old_result_file_name)?;
-    }
-
-    debug!("old_result_file_name: {}", old_result_file_name);
-
     let f = File::create(format!("{}/matlab_input.csv", path))?;
     let mut grain_file = BufWriter::new(f);
 
@@ -213,20 +202,16 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
             let f = File::create(format!("{}/{}", path, grain.coordinate_file_name))?;
             let mut coordinates_file = BufWriter::new(f);
 
-            debug!("coordinate_file_name: {}", grain.coordinate_file_name);
-
             for coordinate in grain.coordinates.iter() {
                 write!(coordinates_file, "{}, {}\n", coordinate.x, coordinate.y)?;
             }
-
-            grain.waiting_for_results = true;
         }
     }
 
     Ok(())
 }
 
-fn get_results(user_id: u16, user_name: &str) -> Result<String, failure::Error> {
+fn get_results(user_id: u16, user_name: &str) -> Result<Vec<(String, String)>, failure::Error> {
     debug!("grain.rs, get_results()");
     let mut grain_db = get_db_lock()?;
 
@@ -234,22 +219,23 @@ fn get_results(user_id: u16, user_name: &str) -> Result<String, failure::Error> 
     let mut already_processed = HashSet::new();
 
     for grain in grain_db.iter_mut() {
-        if grain.user_id == user_id && grain.waiting_for_results && !already_processed.contains(&grain.sample_name) {
+        if grain.user_id == user_id {
             let path = format!("matlab/{}/{}/result.txt", user_name, grain.sample_name);
             if Path::new(&path).exists() {
-                let mut f = File::open(path)?;
-                let mut contents = String::new();
-                f.read_to_string(&mut contents)?;
+                if  !already_processed.contains(&grain.sample_name) {
+                    let mut f = File::open(path)?;
+                    let mut contents = String::new();
+                    f.read_to_string(&mut contents)?;
 
-                results.push((grain.sample_name.clone(), contents));
+                    results.push((grain.sample_name.clone(), contents));
 
-                grain.waiting_for_results = false;
-                already_processed.insert(grain.sample_name.clone());
+                    already_processed.insert(grain.sample_name.clone());
+                }
             }
         }
     }
 
-    Ok("".to_string())
+    Ok(results)
 }
 
 
@@ -356,7 +342,6 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 coordinates: Vec::new(),
                 coordinate_file_name,
                 axis: Axis{ x1: 0, y1: 0, x2: 0, y2: 0 },
-                waiting_for_results: false,
             })?;
 
             Ok(Response::redirect_303("/grain/load_images"))
@@ -510,11 +495,16 @@ pub fn calculate_get(session_id: &str) -> Result<Response, failure::Error> {
         let allowed_programs = util::list_of_allowed_programs(user_id)?;
 
         if allowed_programs.contains(&ProgramType::Grain3DHe) {
+            let results = get_results(user_id, &user_name)?;
+
+            debug!("results: {:?}", results);
+
             let context = json!({
                 "login_id": user_name,
                 "programs": util::build_program_menu(&allowed_programs),
                 "grain_samples": list_of_grain_samples(user_id)?,
-                "results": get_results(user_id, &user_name)?,
+                "message": if results.len() == 0 {"No results yet"} else {""},
+                "results": results,
             });
 
             Ok(Response::html(util::render("grain_calculate", &context)?))
