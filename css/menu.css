@@ -3,7 +3,7 @@
 }
 
 .base_property {
-  background-color: #4CAF50;
+  background-color: #B00000;
   color: white;
   padding: 16px;
   font-size: 16px;
@@ -50,7 +50,7 @@
 }
 
 .menu_div:hover .menu_button {
-    background-color: #3e8e41;
+    background-color: #B00000;
 }
 
 .menu_bar {
@@ -78,7 +78,7 @@
 }
 
 .active_item {
-    background-color: #4CAF50;
+    background-color: #B00000;
 }
 
 .vspace1 {
