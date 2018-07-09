@@ -3,7 +3,7 @@ use std::fs::{create_dir_all, remove_file, File};
 use std::io::{BufWriter, BufReader, Write, Read};
 use std::path::Path;
 use std::collections::HashSet;
-use std::{thread, time};
+use std::{thread, time, env};
 use std::process::Command;
 
 use rouille::{Response, Request, input};
@@ -198,10 +198,11 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
     debug!("grain.rs, submit_calculation()");
     let mut grain_db = get_db_lock();
 
-    let path = format!("matlab/{}/{}", user_name, sample_name);
-    create_dir_all(&path)?;
+    let grain_folder = format!("matlab/{}/{}", user_name, sample_name);
+    create_dir_all(&grain_folder)?;
 
-    let f = File::create(format!("{}/matlab_input.csv", path))?;
+    let input_file = format!("{}/matlab_input.csv", grain_folder);
+    let f = File::create(&input_file)?;
     let mut grain_file = BufWriter::new(f);
 
     for grain in grain_db.iter_mut() {
@@ -211,7 +212,7 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
             write!(grain_file, "{}, {}, {}, {}, ", grain.broken_tips, grain.zoned, grain.rim_width, grain.ratio_rim_core)?;
             write!(grain_file, "{}, {}, {}, {}\n", grain.axis.x1, grain.axis.y1, grain.axis.x2, grain.axis.y2)?;
 
-            let f = File::create(format!("{}/{}", path, grain.coordinate_file_name))?;
+            let f = File::create(format!("{}/{}", grain_folder, grain.coordinate_file_name))?;
             let mut coordinates_file = BufWriter::new(f);
 
             for coordinate in grain.coordinates.iter() {
@@ -220,17 +221,27 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
         }
     }
 
-    let result_file = format!("matlab/{}/{}/result.txt", user_name, sample_name);
-    if Path::new(&result_file).exists() {
-        remove_file(result_file)?;
+    let output_file = format!("{}/result.txt", grain_folder);
+    if Path::new(&output_file).exists() {
+        remove_file(&output_file)?;
     }
 
+    let current_folder = env::current_dir().unwrap();
+    let script_start = format!("input_file='{}';output_file='{}';grain_folder='{}/{}';run('run_3DFt.m')", input_file, output_file, current_folder.display(), grain_folder);
+
     Command::new(configuration::matlab_exec())
-        .args(&["-nodisplay", "-nosplash", "-nodesktop", "-sd", &configuration::matlab_folder(), "-r", ""])
+        .args(&["-nodisplay", "-nosplash", "-nodesktop", "-sd", &configuration::matlab_folder(), "-r", &script_start])
         .spawn()?;
 
-
     Ok(())
+
+/*
+    Test on MacOS:
+            /Applications/MATLAB_R2018a.app/bin/matlab -nodisplay -nosplash -nodesktop -sd /Users/willi/tmp/FT_model_180419 -r "input_file='in.csv';output_file='out.csv';grain_folder='/Users/willi/tmp/';run('run_3DFt.m')"
+
+    Test on Linux (webserver):
+*/
+
 }
 
 fn get_results(user_id: u16, user_name: &str) -> Result<Vec<(String, String)>, failure::Error> {
