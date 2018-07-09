@@ -3,6 +3,8 @@ use std::fs::{create_dir_all, remove_file, File};
 use std::io::{BufWriter, BufReader, Write, Read};
 use std::path::Path;
 use std::collections::HashSet;
+use std::{thread, time};
+use std::process::Command;
 
 use rouille::{Response, Request, input};
 use failure;
@@ -64,13 +66,23 @@ lazy_static! {
     };
 }
 
-fn get_db_lock<'a>() -> Result<MutexGuard<'a, Vec<GrainImage>>, failure::Error> {
-    GRAIN_DB.lock().map_err(|_| WebGuiError::GrainDBMutexLockError.into())
+fn get_db_lock<'a>() -> MutexGuard<'a, Vec<GrainImage>> {
+    loop {
+        let lock = GRAIN_DB.try_lock();
+        if let Ok(mutex) = lock {
+            return mutex
+        } else {
+            debug!("grain.rs, get_db_lock() -> thread_sleep");
+            // Sleep and try again to aquire the lock
+            let duration = time::Duration::from_millis(100);
+            thread::sleep(duration);
+        }
+    }
 }
 
 pub fn load_db() -> Result<(), failure::Error> {
     debug!("utils.rs, load_db()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
 
     let mut data = String::new();
     let f = File::open(configuration::grain_db()?)?;
@@ -96,7 +108,7 @@ fn save_db(grain_db: &Vec<GrainImage>) -> Result<(), failure::Error> {
 
 fn list_of_grain_images(user_id: u16) -> Result<Vec<GrainImage>, failure::Error> {
     debug!("grain.rs, list_of_grain_images()");
-    let grain_db = get_db_lock()?;
+    let grain_db = get_db_lock();
 
     Ok(grain_db.iter()
         .filter(|grain| grain.user_id == user_id)
@@ -105,7 +117,7 @@ fn list_of_grain_images(user_id: u16) -> Result<Vec<GrainImage>, failure::Error>
 
 fn list_of_grain_samples(user_id: u16) -> Result<Vec<String>, failure::Error> {
     debug!("grain.rs, list_of_grain_samples()");
-    let grain_db = get_db_lock()?;
+    let grain_db = get_db_lock();
 
     Ok(grain_db.iter()
         .filter(|grain| grain.user_id == user_id)
@@ -115,7 +127,7 @@ fn list_of_grain_samples(user_id: u16) -> Result<Vec<String>, failure::Error> {
 
 fn create_new_id() -> Result<u32, failure::Error> {
     debug!("grain.rs, create_new_id()");
-    let grain_db = get_db_lock()?;
+    let grain_db = get_db_lock();
 
     let num_of_elements = grain_db.len();
 
@@ -128,7 +140,7 @@ fn create_new_id() -> Result<u32, failure::Error> {
 
 fn add_grain_image(new_image: GrainImage) -> Result<(), failure::Error> {
     debug!("grain.rs, add_grain_images()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
     grain_db.push(new_image);
 
     save_db(&*grain_db)?;
@@ -138,7 +150,7 @@ fn add_grain_image(new_image: GrainImage) -> Result<(), failure::Error> {
 
 fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure::Error> {
     debug!("grain.rs, delete_grain_images()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
 
     for id in image_ids {
         if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
@@ -153,7 +165,7 @@ fn delete_grain_images(user_id: u16, image_ids: Vec<u32>) -> Result<(), failure:
 
 fn list_of_selected_grain_images(user_id: u16, sample_name: &str) -> Result<Vec<(String, u32)>, failure::Error> {
     debug!("grain.rs, list_of_selected_grain_images()");
-    let grain_db = get_db_lock()?;
+    let grain_db = get_db_lock();
 
     Ok(grain_db.iter()
         .filter(|grain| grain.user_id == user_id && grain.sample_name == sample_name)
@@ -162,7 +174,7 @@ fn list_of_selected_grain_images(user_id: u16, sample_name: &str) -> Result<Vec<
 
 fn user_has_image(user_id: u16, sample_name: &str, file_name: &str) -> Result<bool, failure::Error> {
     debug!("grain.rs, user_has_image()");
-    let grain_db = get_db_lock()?;
+    let grain_db = get_db_lock();
 
     Ok(grain_db.iter()
     .any(|grain| grain.user_id == user_id && grain.sample_name == sample_name && grain.file_name == file_name))
@@ -170,7 +182,7 @@ fn user_has_image(user_id: u16, sample_name: &str, file_name: &str) -> Result<bo
 
 fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<Coordinates>, axis: Axis) -> Result<(), failure::Error> {
     debug!("grain.rs, save_outline_for_image()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
 
     if let Some(index) = grain_db.iter().position(|grain| grain.id == id && grain.user_id == user_id) {
         grain_db[index].coordinates = coordinates;
@@ -184,7 +196,7 @@ fn save_outline_for_image(user_id: u16, id: u32, coordinates: Vec<Coordinates>, 
 
 fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Result<(), failure::Error> {
     debug!("grain.rs, submit_calculation()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
 
     let path = format!("matlab/{}/{}", user_name, sample_name);
     create_dir_all(&path)?;
@@ -208,12 +220,22 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
         }
     }
 
+    let result_file = format!("matlab/{}/{}/result.txt", user_name, sample_name);
+    if Path::new(&result_file).exists() {
+        remove_file(result_file)?;
+    }
+/*
+    Command::new(configuration::matlab_exec())
+        .args(&["-nodisplay", "-nosplash", "-nodesktop", "-sd", configuration::matlab_folder(), "-r", ""])
+        .spawn()?;
+
+*/
     Ok(())
 }
 
 fn get_results(user_id: u16, user_name: &str) -> Result<Vec<(String, String)>, failure::Error> {
     debug!("grain.rs, get_results()");
-    let mut grain_db = get_db_lock()?;
+    let mut grain_db = get_db_lock();
 
     let mut results = Vec::new();
     let mut already_processed = HashSet::new();

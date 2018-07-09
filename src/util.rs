@@ -1,6 +1,7 @@
 use std::sync::{Mutex, MutexGuard};
 use std::fs::File;
 use std::io::{Read, BufReader};
+use std::{thread, time};
 
 use serde::{Serialize};
 use handlebars::{Handlebars};
@@ -53,13 +54,23 @@ lazy_static! {
     };
 }
 
-fn get_db_lock<'a>() -> Result<MutexGuard<'a, Vec<User>>, failure::Error> {
-    USER_DB.lock().map_err(|_| WebGuiError::UserDBMutexLockError.into())
+fn get_db_lock<'a>() -> MutexGuard<'a, Vec<User>> {
+    loop {
+        let lock = USER_DB.try_lock();
+        if let Ok(mutex) = lock {
+            return mutex
+        } else {
+            debug!("util.rs, get_db_lock() -> thread_sleep");
+            // Sleep and try again to aquire the lock
+            let duration = time::Duration::from_millis(100);
+            thread::sleep(duration);
+        }
+    }
 }
 
 pub fn load_db() -> Result<(), failure::Error> {
     debug!("utils.rs, load_db()");
-    let mut user_db = get_db_lock()?;
+    let mut user_db = get_db_lock();
 
     let mut data = String::new();
     let f = File::open(configuration::user_db()?)?;
@@ -73,7 +84,7 @@ pub fn load_db() -> Result<(), failure::Error> {
 
 fn get_hash_from_db(login_id: &str) -> Result<Option<String>, failure::Error> {
     debug!("utils.rs, get_hash_from_db()");
-    let user_db = get_db_lock()?;
+    let user_db = get_db_lock();
 
     let passwd_hash = user_db.iter()
         .filter(|user| user.login_id == login_id)
@@ -100,7 +111,7 @@ pub fn check_login(login_id: &str, password: &str) -> Result<bool, failure::Erro
 
 pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
     debug!("utils.rs, login()");
-    let mut user_db = get_db_lock()?;
+    let mut user_db = get_db_lock();
 
     let mut users_found = 0;
     let mut index = 0;
@@ -125,7 +136,7 @@ pub fn login(session_id: &str, login_id: &str) -> Result<(), failure::Error> {
 
 pub fn logout(session_id: &str) -> Result<(), failure::Error> {
     debug!("utils.rs, logout()");
-    let mut user_db = get_db_lock()?;
+    let mut user_db = get_db_lock();
 
     let mut users_found = 0;
     let mut index = 0;
@@ -149,7 +160,7 @@ pub fn logout(session_id: &str) -> Result<(), failure::Error> {
 
 pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
     debug!("utils.rs, logged_in()");
-    let user_db = get_db_lock()?;
+    let user_db = get_db_lock();
 
     let users_logged_in = user_db.iter()
         .filter(|user| user.session_id == session_id)
@@ -164,7 +175,7 @@ pub fn logged_in(session_id: &str) -> Result<bool, failure::Error> {
 
 pub fn login_id(session_id: &str) -> Result<(String, u16), failure::Error> {
     debug!("utils.rs, login_id()");
-    let user_db = get_db_lock()?;
+    let user_db = get_db_lock();
 
     let user_ids = user_db.iter()
         .filter(|user| user.session_id == session_id)
@@ -179,7 +190,7 @@ pub fn login_id(session_id: &str) -> Result<(String, u16), failure::Error> {
 
 pub fn list_of_allowed_programs(user_id: u16) -> Result<Vec<ProgramType>, failure::Error> {
     debug!("utils.rs, login_id()");
-    let user_db = get_db_lock()?;
+    let user_db = get_db_lock();
 
     let allowed_programs = user_db.iter()
         .filter(|user| user.id == user_id)
