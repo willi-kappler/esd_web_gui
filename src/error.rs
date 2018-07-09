@@ -1,7 +1,5 @@
 #[derive(Debug, Fail)]
 pub enum WebGuiError {
-    #[fail(display = "Could not lock CONFIGURATION")]
-    ConfigurationMutexLockError,
     #[fail(display = "Invalid number of command line arguments")]
     InvalidCommandLineArguments,
     #[fail(display = "User name not found")]

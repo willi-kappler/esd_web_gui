@@ -85,7 +85,7 @@ pub fn load_db() -> Result<(), failure::Error> {
     let mut grain_db = get_db_lock();
 
     let mut data = String::new();
-    let f = File::open(configuration::grain_db()?)?;
+    let f = File::open(configuration::grain_db())?;
     let mut f = BufReader::new(f);
     f.read_to_string(&mut data)?;
 
@@ -99,7 +99,7 @@ fn save_db(grain_db: &Vec<GrainImage>) -> Result<(), failure::Error> {
     let grain_list = GrainList{ grains: grain_db.clone() };
 
     let serialized = toml::Value::try_from(grain_list)?.to_string();
-    let f = File::create(configuration::grain_db()?)?;
+    let f = File::create(configuration::grain_db())?;
     let mut f = BufWriter::new(f);
     f.write_all(serialized.as_bytes())?;
 
@@ -224,12 +224,12 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
     if Path::new(&result_file).exists() {
         remove_file(result_file)?;
     }
-/*
+
     Command::new(configuration::matlab_exec())
-        .args(&["-nodisplay", "-nosplash", "-nodesktop", "-sd", configuration::matlab_folder(), "-r", ""])
+        .args(&["-nodisplay", "-nosplash", "-nodesktop", "-sd", &configuration::matlab_folder(), "-r", ""])
         .spawn()?;
 
-*/
+
     Ok(())
 }
 

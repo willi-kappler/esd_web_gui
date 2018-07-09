@@ -73,7 +73,7 @@ pub fn load_db() -> Result<(), failure::Error> {
     let mut user_db = get_db_lock();
 
     let mut data = String::new();
-    let f = File::open(configuration::user_db()?)?;
+    let f = File::open(configuration::user_db())?;
     let mut f = BufReader::new(f);
     f.read_to_string(&mut data)?;
 

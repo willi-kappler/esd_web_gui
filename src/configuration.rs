@@ -1,7 +1,8 @@
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::process;
 use std::env;
 use std::fs;
+use std::{thread, time};
 
 use toml;
 use failure;
@@ -14,6 +15,8 @@ lazy_static! {
             log_filename: "webgui.log".to_string(),
             user_db: "not_set".to_string(),
             grain_db: "not_set".to_string(),
+            matlab_exec: "not_set".to_string(),
+            matlab_folder: "not_set".to_string(),
         })
     };
 }
@@ -23,7 +26,25 @@ struct Configuration {
     log_filename: String,
     user_db: String,
     grain_db: String,
+    matlab_exec: String,
+    matlab_folder: String,
 }
+
+fn get_db_lock<'a>() -> MutexGuard<'a, Configuration> {
+    loop {
+        let lock = CONFIGURATION.try_lock();
+        if let Ok(mutex) = lock {
+            return mutex
+        } else {
+            debug!("configuration.rs, get_db_lock() -> thread_sleep");
+            // Sleep and try again to aquire the lock
+            let duration = time::Duration::from_millis(100);
+            thread::sleep(duration);
+        }
+    }
+}
+
+
 
 pub fn load_configuration() {
     debug!("configuration.rs, load_configuration()");
@@ -48,15 +69,9 @@ fn load_configuration_helper(input: Vec<String>) -> Result<(), failure::Error> {
         let content = fs::read_to_string(filename)?;
         let new_configuration : Configuration = toml::from_str(&content)?;
 
-        match CONFIGURATION.lock() {
-            Ok(mut configuration) => {
-                *configuration = new_configuration;
-                Ok(())
-            }
-            Err(_) => {
-                Err(WebGuiError::ConfigurationMutexLockError.into())
-            }
-        }
+        let mut configuration = get_db_lock();
+        *configuration = new_configuration;
+        Ok(())
     } else {
         println!("Usage: {} config_filename", input[0]);
         Err(WebGuiError::InvalidCommandLineArguments.into())
@@ -65,37 +80,30 @@ fn load_configuration_helper(input: Vec<String>) -> Result<(), failure::Error> {
 
 pub fn log_filename() -> String {
     debug!("configuration.rs, log_filename()");
-    match CONFIGURATION.lock() {
-        Ok(configuration) => {
-            configuration.log_filename.clone()
-        }
-        Err(e) => {
-            println!("Could not lock CONFIGURATION: {}", e);
-            process::exit(1)
-        }
-    }
+    let configuration = get_db_lock();
+    configuration.log_filename.clone()
 }
 
-pub fn user_db() -> Result<String, failure::Error> {
+pub fn user_db() -> String {
     debug!("configuration.rs, user_db()");
-    match CONFIGURATION.lock() {
-        Ok(configuration) => {
-            Ok(configuration.user_db.clone())
-        }
-        Err(_) => {
-            Err(WebGuiError::ConfigurationMutexLockError.into())
-        }
-    }
+    let configuration = get_db_lock();
+    configuration.user_db.clone()
 }
 
-pub fn grain_db() -> Result<String, failure::Error> {
+pub fn grain_db() -> String {
     debug!("configuration.rs, grain_db()");
-    match CONFIGURATION.lock() {
-        Ok(configuration) => {
-            Ok(configuration.grain_db.clone())
-        }
-        Err(_) => {
-            Err(WebGuiError::ConfigurationMutexLockError.into())
-        }
-    }
+    let configuration = get_db_lock();
+    configuration.grain_db.clone()
+}
+
+pub fn matlab_exec() -> String {
+    debug!("configuration.rs, grain_db()");
+    let configuration = get_db_lock();
+    configuration.matlab_exec.clone()
+}
+
+pub fn matlab_folder() -> String {
+    debug!("configuration.rs, grain_db()");
+    let configuration = get_db_lock();
+    configuration.matlab_folder.clone()
 }
