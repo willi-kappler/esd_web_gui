@@ -237,7 +237,7 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
 
 /*
     Test on MacOS:
-            /Applications/MATLAB_R2018a.app/bin/matlab -nodisplay -nosplash -nodesktop -sd /Users/willi/tmp/FT_model_180419 -r "input_file='in.csv';output_file='out.csv';grain_folder='/Users/willi/tmp/';run('run_3DFt.m')"
+            /Applications/MATLAB_R2018a.app/bin/matlab -nodisplay -nosplash -nodesktop -sd /Users/willi/tmp/FT_model_180419 -r "input_file='matlab_input.csv';output_file='result.txt';grain_folder='/Users/willi/tmp/git/web_gui/matlab/test_user/test1';run('run_3DFt.m')"
 
     Test on Linux (webserver):
 */
