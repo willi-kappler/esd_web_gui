@@ -73,7 +73,7 @@ fn get_db_lock<'a>() -> MutexGuard<'a, Vec<GrainImage>> {
             return mutex
         } else {
             debug!("grain.rs, get_db_lock() -> thread_sleep");
-            // Sleep and try again to aquire the lock
+            // Sleep and try again to acquire the lock
             let duration = time::Duration::from_millis(100);
             thread::sleep(duration);
         }
