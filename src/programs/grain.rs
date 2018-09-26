@@ -205,6 +205,9 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
     let f = File::create(&input_file)?;
     let mut grain_file = BufWriter::new(f);
 
+    // Write out header
+    write!(grain_file, "# coordinate file, sample name, size, mode, mineral, ratio 232-238, ratio 147-238, orientation, shape, pyramids, broken tips, zoned, rim width, ratio rim core, axis x1, axis y1, axis x2, axis y2");
+
     for grain in grain_db.iter_mut() {
         if grain.user_id == user_id && grain.sample_name == sample_name {
             write!(grain_file, "{}, {}, {}, {}, {}, ", grain.coordinate_file_name, grain.sample_name, grain.size, grain.mode, grain.mineral)?;
