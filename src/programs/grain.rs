@@ -206,14 +206,36 @@ fn submit_calculation(user_id: u16, user_name: &str, sample_name: &str) -> Resul
     let mut grain_file = BufWriter::new(f);
 
     // Write out header
-    write!(grain_file, "# coordinate file, sample name, size, mode, mineral, ratio 232-238, ratio 147-238, orientation, shape, pyramids, broken tips, zoned, rim width, ratio rim core, axis x1, axis y1, axis x2, axis y2");
+    write!(grain_file, "# coordinate file, sample name, size, mode, mineral, ratio 232-238, ratio 147-238, orientation, shape, pyramids, broken tips, zoned, rim width, ratio rim core, axis x1, axis y1, axis x2, axis y2\n");
 
     for grain in grain_db.iter_mut() {
         if grain.user_id == user_id && grain.sample_name == sample_name {
-            write!(grain_file, "{}, {}, {}, {}, {}, ", grain.coordinate_file_name, grain.sample_name, grain.size, grain.mode, grain.mineral)?;
-            write!(grain_file, "{}, {}, {}, {}, {}, ", grain.ratio_232_238, grain.ratio_147_238, grain.orientation, grain.shape, grain.pyramids)?;
-            write!(grain_file, "{}, {}, {}, {}, ", grain.broken_tips, grain.zoned, grain.rim_width, grain.ratio_rim_core)?;
-            write!(grain_file, "{}, {}, {}, {}\n", grain.axis.x1, grain.axis.y1, grain.axis.x2, grain.axis.y2)?;
+            write!(grain_file, "{}, ", grain.coordinate_file_name)?;
+            write!(grain_file, "{}, ", grain.sample_name)?;
+            write!(grain_file, "{}, ", grain.size)?;
+            write!(grain_file, "{}, ", if grain.mode == 0 {"normal"} else {"cut"})?;
+            write!(grain_file, "{}, ", if grain.mineral == 0 {"ap"} else {"zr"})?;
+            write!(grain_file, "{}, ", grain.ratio_232_238)?;
+            write!(grain_file, "{}, ", grain.ratio_147_238)?;
+            write!(grain_file, "{}, ", if grain.orientation == 0 {"parallel"} else {"perpendicular"})?;
+            write!(grain_file, "{}, ",
+                match grain.shape {
+                    0 => "hexagonal",
+                    1 => "ellipsoid",
+                    2 => "cylinder",
+                    3 => "block",
+                    _ => "unknown"
+                }
+            )?;
+            write!(grain_file, "{}, ", grain.pyramids)?;
+            write!(grain_file, "{}, ", grain.broken_tips)?;
+            write!(grain_file, "{}, ", grain.zoned)?;
+            write!(grain_file, "{}, ", grain.rim_width)?;
+            write!(grain_file, "{}, ", grain.ratio_rim_core)?;
+            write!(grain_file, "{}, ", grain.axis.x1)?;
+            write!(grain_file, "{}, ", grain.axis.y1)?;
+            write!(grain_file, "{}, ", grain.axis.x2)?;
+            write!(grain_file, "{}\n", grain.axis.y2)?;
 
             let f = File::create(format!("{}/{}", grain_folder, grain.coordinate_file_name))?;
             let mut coordinates_file = BufWriter::new(f);
