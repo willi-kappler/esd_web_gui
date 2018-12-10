@@ -322,7 +322,7 @@ pub fn load_images_get(session_id: &str) -> Result<Response, failure::Error> {
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -402,12 +402,12 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 axis: Axis{ x1: 0, y1: 0, x2: 0, y2: 0 },
             })?;
 
-            Ok(Response::redirect_303("/grain/load_images"))
+            Ok(Response::redirect_303("/web_gui/grain/load_images"))
         } else {
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -424,12 +424,12 @@ pub fn remove_images_post(session_id: &str, request: &Request) -> Result<Respons
 
             delete_grain_images(user_id, data.remove)?;
 
-            Ok(Response::redirect_303("/grain/load_images"))
+            Ok(Response::redirect_303("/web_gui/grain/load_images"))
         } else {
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -451,7 +451,7 @@ pub fn outline_images_get(session_id: &str) -> Result<Response, failure::Error> 
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -482,7 +482,7 @@ pub fn outline_images_post(session_id: &str, request: &Request) -> Result<Respon
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -542,7 +542,7 @@ pub fn store_outline_post(session_id: &str, request: &Request) -> Result<Respons
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -570,7 +570,7 @@ pub fn calculate_get(session_id: &str) -> Result<Response, failure::Error> {
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 
@@ -600,6 +600,6 @@ pub fn calculate_post(session_id: &str, request: &Request) -> Result<Response, f
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }

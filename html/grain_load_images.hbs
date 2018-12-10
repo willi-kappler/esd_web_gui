@@ -1,10 +1,10 @@
 {{> header }}
 
   <ul class="menu_bar">
-    <li class="menu_item"><a href="/grain">About 3D-He</a></li>
-    <li class="menu_item"><a href="/grain/load_images" class="active_item">Load Images</a></li>
-    <li class="menu_item"><a href="/grain/outline_images">Set Grain Outline</a></li>
-    <li class="menu_item"><a href="/grain/calculate">Run calculation</a></li>
+    <li class="menu_item"><a href="/web_gui/grain">About 3D-He</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/load_images" class="active_item">Load Images</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/outline_images">Set Grain Outline</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/calculate">Run calculation</a></li>
   </ul>
 
 
@@ -37,7 +37,7 @@
     <li>Ratio Rim / Core: radio nuclide ratio between rim and core (1: homogenous distribution, &lt;1: rim depleted, &gt;1: rim concentrated)</li>
   </ol>
 
-  <form action="/grain/load_images" method="post" class="vspace2" enctype="multipart/form-data">
+  <form action="/web_gui/grain/load_images" method="post" class="vspace2" enctype="multipart/form-data">
     <table class="upload_image">
       <tr>
         <td>1) Image name</td>
@@ -121,7 +121,7 @@
   </form>
 
   {{#if grain_images}}
-  <form action="/grain/remove_images" method="post" class="vspace2">
+  <form action="/web_gui/grain/remove_images" method="post" class="vspace2">
     <table class="upload_image">
       <tr>
         <td>Remove?</td>

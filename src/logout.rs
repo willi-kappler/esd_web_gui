@@ -10,5 +10,5 @@ pub fn handle(session_id: &str) -> Result<Response, failure::Error> {
         util::logout(session_id)?;
     }
 
-    Ok(Response::redirect_303("/"))
+    Ok(Response::redirect_303("/web_gui/"))
 }

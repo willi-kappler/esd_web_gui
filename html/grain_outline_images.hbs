@@ -1,15 +1,15 @@
 {{> header }}
 
   <ul class="menu_bar">
-    <li class="menu_item"><a href="/grain">About 3D-He</a></li>
-    <li class="menu_item"><a href="/grain/load_images">Load Images</a></li>
-    <li class="menu_item"><a href="/grain/outline_images" class="active_item">Set Grain Outline</a></li>
-    <li class="menu_item"><a href="/grain/calculate">Run calculation</a></li>
+    <li class="menu_item"><a href="/web_gui/grain">About 3D-He</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/load_images">Load Images</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/outline_images" class="active_item">Set Grain Outline</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/calculate">Run calculation</a></li>
   </ul>
 
   <div class="center_content">
     {{#if grain_samples}}
-      <form action="/grain/outline_images" method="post" class="vspace2">
+      <form action="/web_gui/grain/outline_images" method="post" class="vspace2">
         Select sample:
         <select name="sample">
         {{#each grain_samples as |sample|}}
@@ -28,7 +28,7 @@
 
 
     {{#if sample_images}}
-      <form action="/grain/store_outlines" method="post" class="vspace2">
+      <form action="/web_gui/grain/store_outlines" method="post" class="vspace2">
         <table class="grain_image_outline">
           {{#each sample_images as |image|}}
           <input name="coordinates" type="hidden" value="">
@@ -38,11 +38,11 @@
               <td colspan="3">{{image.[0]}}</td>
             </tr>
             <tr>
-              <td><img name="grain_image" src="/grain/user_data/{{image.[0]}}"></img></td>
+              <td><img name="grain_image" src="/web_gui/grain/user_data/{{image.[0]}}"></img></td>
               <td><canvas name="grain_canvas" width="1" height="1"></canvas></td>
               <td>bw threshold:
-                <img class="button_center" src="/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
-                <img class="button_center" src="/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
+                <img class="button_center" src="/web_gui/images/plus.png" onclick="inc_bw_threshold({{@index}})"></img>
+                <img class="button_center" src="/web_gui/images/minus.png" onclick="dec_bw_threshold({{@index}})"></img>
               </td>
             </tr>
             <tr class="end_row">
@@ -56,6 +56,6 @@
     {{/if}}
   </div>
 
-  <script src="/js/grain_outline.js"></script>
+  <script src="/web_gui/js/grain_outline.js"></script>
 
 {{> footer }}

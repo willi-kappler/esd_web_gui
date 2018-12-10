@@ -253,7 +253,7 @@ pub fn show_program(session_id: &str, program: &ProgramType) -> Result<Response,
             Ok(Response::redirect_303(get_template_name(&allowed_programs[0])))
         }
     } else {
-        Ok(Response::redirect_303("/"))
+        Ok(Response::redirect_303("/web_gui/"))
     }
 }
 

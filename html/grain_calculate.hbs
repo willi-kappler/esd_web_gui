@@ -1,15 +1,15 @@
 {{> header }}
 
   <ul class="menu_bar">
-    <li class="menu_item"><a href="/grain">About 3D-He</a></li>
-    <li class="menu_item"><a href="/grain/load_images">Load Images</a></li>
-    <li class="menu_item"><a href="/grain/outline_images">Set Grain Outline</a></li>
-    <li class="menu_item"><a href="/grain/calculate" class="active_item">Run calculation</a></li>
+    <li class="menu_item"><a href="/web_gui/grain">About 3D-He</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/load_images">Load Images</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/outline_images">Set Grain Outline</a></li>
+    <li class="menu_item"><a href="/web_gui/grain/calculate" class="active_item">Run calculation</a></li>
   </ul>
 
   <div class="center_content">
     {{#if grain_samples}}
-      <form action="/grain/calculate" method="post" class="vspace2">
+      <form action="/web_gui/grain/calculate" method="post" class="vspace2">
         Select sample:
         <select name="sample">
         {{#each grain_samples as |sample|}}
@@ -34,6 +34,6 @@
     {{/if}}
   </div>
 
-  <script src="/js/grain_refresh.js"></script>
+  <script src="/web_gui/js/grain_refresh.js"></script>
 
 {{> footer }}

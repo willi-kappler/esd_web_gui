@@ -83,103 +83,106 @@ fn handle_request(request: &Request, session_id: &str) -> Result<Response, failu
     debug!("main.rs, handle_request()");
 
     Ok(router!(request,
-        (GET) ["/"] => {
+        (GET) ["/web_gui/"] => {
             menu::handle(session_id)?
         },
-        (POST) ["/"] => {
+        (POST) ["/web_gui/"] => {
             login::handle(session_id, request)?
         },
-        (GET) ["logout"] => {
+        (GET) ["/web_gui/logout"] => {
             logout::handle(session_id)?
         },
 
         // Pecube:
-        (GET) ["pecube"] => {
+        (GET) ["/web_gui/pecube"] => {
             pecube::about_get(session_id)?
         },
 
         // 3D He (FT Grain Correction):
-        (GET) ["grain"] => {
+        (GET) ["/web_gui/grain"] => {
             grain::about_get(session_id)?
         },
-        (GET) ["grain/load_images"] => {
+        (GET) ["/web_gui/grain/load_images"] => {
             grain::load_images_get(session_id)?
         },
-        (POST) ["grain/load_images"] => {
+        (POST) ["/web_gui/grain/load_images"] => {
             grain::load_images_post(session_id, request)?
         },
-        (POST) ["grain/remove_images"] => {
+        (POST) ["/web_gui/grain/remove_images"] => {
             grain::remove_images_post(session_id, request)?
         },
-        (GET) ["grain/outline_images"] => {
+        (GET) ["/web_gui/grain/outline_images"] => {
             grain::outline_images_get(session_id)?
         },
-        (POST) ["grain/outline_images"] => {
+        (POST) ["/web_gui/grain/outline_images"] => {
             grain::outline_images_post(session_id, request)?
         },
-        (POST) ["grain/store_outlines"] => {
+        (POST) ["/web_gui/grain/store_outlines"] => {
             grain::store_outline_post(session_id, request)?
         },
-        (GET) ["grain/calculate"] => {
+        (GET) ["/web_gui/grain/calculate"] => {
             grain::calculate_get(session_id)?
         },
-        (POST) ["grain/calculate"] => {
+        (POST) ["/web_gui/grain/calculate"] => {
             grain::calculate_post(session_id, request)?
         },
 
-        (GET) ["grain/user_data/{username}/{samplename}/{imagename}", username: String, samplename: String, imagename: String] => {
+        (GET) ["/web_gui/grain/user_data/{username}/{samplename}/{imagename}", username: String, samplename: String, imagename: String] => {
             grain::sample_image_get(session_id, username, samplename, imagename)?
         },
-        (GET) ["js/grain_outline.js"] => {
+        (GET) ["/web_gui/js/grain_outline.js"] => {
             let file = File::open("js/grain_outline.js")?;
             Response::from_file("text/javascript", file)
         },
-        (GET) ["js/grain_refresh.js"] => {
+        (GET) ["/web_gui/js/grain_refresh.js"] => {
             let file = File::open("js/grain_refresh.js")?;
             Response::from_file("text/javascript", file)
         },
 
 
         // Landlab:
-        (GET) ["landlab"] => {
+        (GET) ["/web_gui/landlab"] => {
             landlab::about_get(session_id)?
         },
 
         // IceCascade:
-        (GET) ["icecascade"] => {
+        (GET) ["/web_gui/icecascade"] => {
             icecascade::about_get(session_id)?
         },
 
         // Coupled:
-        (GET) ["coupled"] => {
+        (GET) ["/web_gui/coupled"] => {
             coupled::about_get(session_id)?
         },
 
         // Static files:
-        (GET) ["images/uni_esd_logo.jpg"] => {
+        (GET) ["/web_gui/images/uni_esd_logo.jpg"] => {
             let file = File::open("images/uni_esd_logo.jpg")?;
             Response::from_file("image/jpeg", file)
         },
-        (GET) ["images/grain20_photo.jpg"] => {
+        (GET) ["/web_gui/images/grain20_photo.jpg"] => {
             let file = File::open("images/grain20_photo.jpg")?;
             Response::from_file("image/jpeg", file)
         },
-        (GET) ["images/plus.png"] => {
+        (GET) ["/web_gui/images/plus.png"] => {
             let file = File::open("images/plus.png")?;
             Response::from_file("image/png", file)
         },
-        (GET) ["images/minus.png"] => {
+        (GET) ["/web_gui/images/minus.png"] => {
             let file = File::open("images/minus.png")?;
             Response::from_file("image/png", file)
         },
-        (GET) ["css/login.css"] => {
+        (GET) ["/web_gui/css/login.css"] => {
             let file = File::open("css/login.css")?;
             Response::from_file("text/css", file)
         },
-        (GET) ["css/menu.css"] => {
+        (GET) ["/web_gui/css/menu.css"] => {
             let file = File::open("css/menu.css")?;
             Response::from_file("text/css", file)
         },
-        _ => Response::html("Web-GUI: Page not found")
+        _ => {
+            debug!("Page not found: {}", request.raw_url());
+            Response::html("Web-GUI: Page not found")
+        }
     ))
 }
