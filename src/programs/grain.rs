@@ -402,6 +402,7 @@ pub fn load_images_post(session_id: &str, request: &Request) -> Result<Response,
                 axis: Axis{ x1: 0, y1: 0, x2: 0, y2: 0 },
             })?;
 
+            // TODO: Add values from the first image as new defaults.
             Ok(Response::redirect_303("/web_gui/grain/load_images"))
         } else {
             Ok(Response::redirect_303(util::get_template_name(&allowed_programs[0])))
